@@ -31,9 +31,10 @@ include = ["modellix*"]
 namespaces = false
 
 [tool.comfy]
+PublisherId = "modellix"
 DisplayName = "Modellix"
 requires-comfyui = ">=0.40.0"
-# PublisherId and a Registry-compatible release version are set before publishing.
+# Set a Registry-compatible release version after implementation and acceptance.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

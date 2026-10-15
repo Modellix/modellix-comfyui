@@ -1,6 +1,7 @@
 include LICENSE README.md requirements.txt
 exclude AGENTS.md AGENGTS.md
 exclude .env .env.*
+exclude comfy-registry-token.txt
 global-exclude *.key *.pem *apikey*.txt *token*.txt *.log *.pyc
 prune .agents
 prune .docs
