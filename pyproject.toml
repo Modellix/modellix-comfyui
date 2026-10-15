@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=77.0.3", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modellix-comfyui"
+version = "0.1.0.dev0"
+description = "Modellix media generation custom nodes for ComfyUI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Modellix" }]
+dynamic = ["dependencies"]
+
+[project.optional-dependencies]
+dev = ["build>=1.2,<2", "pytest>=8,<9", "pytest-asyncio>=0.24,<1", "ruff>=0.9,<1"]
+
+[project.urls]
+Homepage = "https://www.modellix.ai"
+Documentation = "https://docs.modellix.ai/ways-to-use/api"
+Repository = "https://github.com/Modellix/modellix-comfyui"
+Issues = "https://github.com/Modellix/modellix-comfyui/issues"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["modellix*"]
+namespaces = false
+
+[tool.comfy]
+DisplayName = "Modellix"
+requires-comfyui = ">=0.40.0"
+# PublisherId and a Registry-compatible release version are set before publishing.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extend-exclude = [".agents"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]

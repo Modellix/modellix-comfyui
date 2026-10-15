@@ -1,0 +1,9 @@
+include LICENSE README.md requirements.txt
+exclude AGENTS.md AGENGTS.md
+exclude .env .env.*
+global-exclude *.key *.pem *apikey*.txt *token*.txt *.log *.pyc
+prune .agents
+prune .docs
+prune .venv
+prune .cache
+prune outputs
