@@ -1,6 +1,7 @@
 """Loopback-only, same-origin, write-only configuration routes."""
 import hmac
 import ipaddress
+import re
 import secrets
 from urllib.parse import urlsplit
 
@@ -34,12 +35,26 @@ def local_request(request, write=False):
         raise web.HTTPForbidden(text="Local same-origin request required.") from None
 
 
+async def result_file(request):
+    local_request(request)
+    name = request.match_info["filename"]
+    if not re.fullmatch(r"[a-f0-9]{32}\.(png|mp4|wav|json|srt|txt)", name):
+        raise web.HTTPNotFound()
+    root = runtime.results().root.resolve()
+    path = (root / name).resolve()
+    if root not in path.parents or not path.is_file():
+        raise web.HTTPNotFound()
+    return web.FileResponse(path, headers={"Cache-Control": "private, no-store",
+                                          "X-Content-Type-Options": "nosniff"})
+
+
 def register():
     global _registered
     if _registered:
         return
     from server import PromptServer
     routes = PromptServer.instance.routes
+    routes.get("/modellix/results/{filename}")(result_file)
 
     @routes.get("/modellix/session")
     async def status(request):

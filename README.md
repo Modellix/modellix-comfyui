@@ -4,6 +4,42 @@ Official [Modellix](https://www.modellix.ai) media nodes for ComfyUI. One schema
 
 [Full tutorial](https://docs.modellix.ai/ways-to-use/comfyui) · [Examples](examples) · [Support and acceptance matrix](examples/support-matrix.md)
 
+## Workflow tour
+
+These screenshots show real workflows in the tested local ComfyUI host. API keys are never displayed, and task identifiers are concealed. The image and video examples follow the same small sailboat through generation and animation; the speech example uses a synthetic voice.
+
+### Generate and preview an image
+
+Choose a live model, enter a prompt in its generated form, and connect the native IMAGE output to Preview Image. Wait for the selected model's form to finish loading before Queue; a loading or failed selection cannot submit the previous model.
+
+![Modellix Generate with a sailboat prompt and its native image preview](docs/images/en/image-workflow.webp)
+
+### Connect image references to video
+
+Use the first/last-frame branch and connect each IMAGE field independently. The returned VIDEO connects directly to native Save Video.
+
+![First and last IMAGE connections to Modellix Generate with a native video preview](docs/images/en/reference-video.webp)
+
+### Retrieve an existing task
+
+Submit only returns the task ID. Get Task reads that same task and returns native media, without another generation or upload.
+
+![Submit-only generation connected to Get Task and an image preview](docs/images/en/task-recovery.webp)
+
+### Generate native audio
+
+Choose a speech model and connect its AUDIO output to Preview Audio. Model fields preserve their actual types and sample-rate options.
+
+![Speech generation with typed voice settings and native audio playback](docs/images/en/audio-workflow.webp)
+
+### Configure a local key
+
+The password control offers session use, OS secure storage, clearing, and environment fallback. Its status shows the source, never the key.
+
+![Modellix API Key settings with an empty password field and configured-source status](docs/images/en/api-key-settings.webp)
+
+To reproduce these paths, import the matching [UI workflows](examples/workflows) from the Template Browser or drag their JSON onto the canvas. Review the model fields and mute unused output nodes before Queue. For another paid result, explicitly choose **New Attempt**.
+
 ## Install
 
 Requires ComfyUI **0.40.0+**, Python **3.10+**, a funded [Modellix API key](https://www.modellix.ai/console/api-key), and the Python dependencies below. The initial host baseline is ComfyUI v0.40.0 / frontend 1.55.17. Use a local, single-user host at `http://localhost:8188/`.
@@ -61,6 +97,8 @@ Media outputs contain real native objects: RGB `[1,H,W,3]` float tensors, `Video
 
 **New Attempt** changes the saved `run_nonce`. The next Queue may create one paid request. A normal Queue, a mode/timeout change, cache cleanup or process restart reuses the existing attempt/task. Copies have distinct `node_instance_id` values. Parameter/media changes also identify a different request, so review edits before queueing.
 
+New Attempt also clears an existing `resume_task_id` and the previous task display, so recovery mode cannot silently override the new request. Reviewing an updated schema alone retains the same paid attempt; it does not replay an unknown submission. The local timeout includes model discovery, schema loading, and waiting for shared local work.
+
 Generation and upload POST requests are not retried automatically, including 429/500/503, timeouts, broken connections and missing/invalid task IDs. A persistent attempt is written before submission. If a response is lost or the process stops while submitting, the outcome stays unknown and automatic replay is blocked. Inspect Console history; do not assume the request was free or unaccepted.
 
 ComfyUI Cancel stops local network waits and downloads. It cannot promise remote cancellation or a refund. A known task ID remains recoverable after cancellation, timeout, decoding or download failure. The same key context must own the task. A terminal upstream failure is reported without creating another task.
@@ -80,6 +118,8 @@ Host paths are obtained from ComfyUI, independent of the working directory:
 - Partial downloads are cleaned on failure/cancel and installed atomically.
 
 Records contain task/model IDs, timestamps, fingerprints and local file indexes, not keys, prompts, request bodies or input media. Result eviction never deletes attempt/unknown-submission protection. Damaged attempt records/database fail closed instead of enabling a paid replay. Catalogs are isolated by credential context; public schemas are shared.
+
+If a completed download cannot be decoded, recovery fetches a fresh copy from the original task instead of repeatedly accepting the bad cached bytes. Local result links also work with a configured `MODELLIX_RESULT_DIRECTORY`; the result route cannot serve the private state database.
 
 Defaults: catalog TTL 10 minutes, schema TTL 1 hour, result TTL 7 days, cache 10 GiB, resource download 2 GiB, task download 4 GiB, image 64 MP. Files returned to the host remain pinned conservatively until process exit. Restart to release those pins before reclaiming expired results. Corrupt/missing local results are re-downloaded from the original task; expiry never automatically authorizes a new generation.
 

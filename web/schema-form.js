@@ -108,13 +108,14 @@ export function createForm(node, { request, element: el, button, widget }) {
   button(advanced, "Reset Model Parameters", () => { state.values = {}; state.branches = {}; bindings = [];
     syncSockets(); render(); save(); });
 
-  let catalog = [], schema = null, state = { version: 1, values: {}, branches: {} }, bindings = [], version = 0;
+  let catalog = [], schema = null, schemaSlug = "", state = { version: 1, values: {}, branches: {} }, bindings = [], version = 0;
   const hidden = new Set(["model_slug", "parameters_json", "schema_hash", "bindings_json", "node_instance_id",
     "run_nonce", "mode", "resume_task_id", "timeout"]);
   for (const item of node.widgets || []) {
     if (!hidden.has(item.name)) continue;
     item.computeSize = () => [0, -4];
     item.type = "converted-widget";
+    item.hidden = true;
     if (item.element) item.element.style.display = "none";
   }
 
@@ -312,15 +313,23 @@ export function createForm(node, { request, element: el, button, widget }) {
     save();
   }
 
-  async function choose(slug, refresh = false, offline = false) {
+  async function choose(slug, refresh = false, offline = false, review = refresh) {
     if (!slug) return;
     const currentVersion = ++version;
+    const switching = widget(node, "model_slug").value !== slug || (schema && schemaSlug !== slug);
+    if (switching) {
+      // A Queue while loading must never execute the previously selected model.
+      widget(node, "model_slug").value = slug;
+      widget(node, "schema_hash").value = "modellix:loading";
+      fields.replaceChildren();
+      save();
+    }
+    root.setAttribute("aria-busy", "true");
     status.textContent = "Loading selected model schema…";
     try {
       const result = await request(`schema?slug=${encodeURIComponent(slug)}&refresh=${refresh}&offline=${offline}`);
       if (currentVersion !== version) return;
       const old = schema;
-      const switching = widget(node, "model_slug").value !== slug;
       if (switching && old) {
         for (const [key, index] of Object.entries(state.branches)) {
           const kind = key.split("/").at(-1), path = key.slice(0, key.lastIndexOf("/"));
@@ -330,9 +339,11 @@ export function createForm(node, { request, element: el, button, widget }) {
         }
       }
       schema = result.schema;
+      schemaSlug = slug;
       widget(node, "model_slug").value = slug;
       // Preserve a saved schema hash until explicit refresh/model change; server blocks drift.
-      if (refresh || switching || !widget(node, "schema_hash").value) widget(node, "schema_hash").value = result.hash;
+      if (review || switching || !widget(node, "schema_hash").value ||
+          widget(node, "schema_hash").value === "modellix:loading") widget(node, "schema_hash").value = result.hash;
       const drift = widget(node, "schema_hash").value !== result.hash;
       const model = catalog.find((item) => item.slug === slug);
       description.textContent = `${model?.type || ""} · ${slug.split("/")[0]} · ${model?.description || ""}` +
@@ -341,6 +352,7 @@ export function createForm(node, { request, element: el, button, widget }) {
       if (!drift) prune(old);
       render();
     } catch (error) { if (currentVersion === version) { status.textContent = error.message; fields.replaceChildren(); } }
+    finally { if (currentVersion === version) root.removeAttribute("aria-busy"); }
   }
 
   function filterModels() {
@@ -356,7 +368,7 @@ export function createForm(node, { request, element: el, button, widget }) {
     else models.selectedIndex = -1;
     if (!filtered.length) status.textContent = "No models match this category/search.";
   }
-  async function loadCatalog(refresh = false, offline = false) {
+  async function loadCatalog(refresh = false, offline = false, review = refresh) {
     status.textContent = "Loading catalog…";
     try {
       catalog = (await request(`models?refresh=${refresh}&offline=${offline}`)).models;
@@ -366,7 +378,7 @@ export function createForm(node, { request, element: el, button, widget }) {
       category.value = previous;
       filterModels();
       status.textContent = `${catalog.length} models · Select a model. Text-output models are listed with a scope explanation.`;
-      if (widget(node, "model_slug").value) await choose(widget(node, "model_slug").value, refresh, offline);
+      if (widget(node, "model_slug").value) await choose(widget(node, "model_slug").value, refresh, offline, review);
     } catch (error) { status.textContent = error.message + " Open Settings → Modellix to configure your key, then retry."; }
   }
   search.oninput = filterModels; category.onchange = filterModels;
@@ -383,7 +395,9 @@ export function createForm(node, { request, element: el, button, widget }) {
   };
   const configured = node.onConfigure;
   node.onConfigure = function () { configured?.apply(this, arguments); queueMicrotask(restore); };
-  const credentials = () => loadCatalog(true);
+  // A credential refresh may fetch schemas, but does not review saved contract changes.
+  const credentials = () => loadCatalog(true, false, false);
+  node.modellixResetRecovery = () => { resume.value = ""; };
   window.addEventListener("modellix.credentials", credentials);
   const removed = node.onRemoved;
   node.onRemoved = function () { window.removeEventListener("modellix.credentials", credentials); removed?.apply(this, arguments); };

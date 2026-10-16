@@ -92,3 +92,13 @@ def test_catalog_cache_expiry_and_identity_isolation(tmp_path):
     store.put("catalog", "profile-a", ["a"], ttl=-1)
     assert store.get("catalog", "profile-a") is None
     assert store.get("catalog", "profile-a", stale=True) == ["a"]
+
+
+@pytest.mark.parametrize("kind", ["attempt", "upload", "intent"])
+@pytest.mark.parametrize("value", [None, {}, [], {"state": "unrecognized"}])
+def test_paid_protection_records_reject_structurally_invalid_json(tmp_path, kind, value):
+    store = Store(tmp_path)
+    with store.connect() as db:
+        db.execute("INSERT INTO records VALUES (?, 'damaged', ?, 0)", (kind, json.dumps(value)))
+    with pytest.raises(ModellixError, match="damaged"):
+        store.get(kind, "damaged")

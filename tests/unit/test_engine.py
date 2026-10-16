@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 
 import pytest
@@ -6,6 +7,7 @@ import pytest
 from modellix.auth import Credential
 from modellix.cache import Store
 from modellix.errors import ModellixError
+from modellix.schema import ModelSchema
 from modellix.tasks import Engine
 
 DOCUMENT = {"post": {"requestBody": {"content": {"application/json": {"schema": {
@@ -64,6 +66,7 @@ async def test_stable_nonce_modes_and_restart_reuse_one_paid_task(tmp_path):
     await restarted.generate(**controls())
     await restarted.generate(**controls())
     assert client.posts == 1
+
     await restarted.generate(**controls(run_nonce="explicit-new-attempt"))
     assert client.posts == 2
 
@@ -141,3 +144,93 @@ async def test_cancel_during_submission_remains_unknown_across_restart(tmp_path)
     with pytest.raises(ModellixError, match="unknown"):
         await Engine(client, Store(tmp_path), FakeResults()).generate(**controls())
     assert client.posts == 1
+
+
+@pytest.mark.parametrize("unknown", [False, True])
+async def test_reviewing_a_changed_schema_does_not_replay_the_same_attempt(tmp_path, unknown):
+    class ChangingSchema(FakeClient):
+        document = copy.deepcopy(DOCUMENT)
+
+        async def schema(self, slug, budget):
+            return self.document
+
+    client, store = ChangingSchema(), Store(tmp_path)
+    client.fail = unknown
+    engine = Engine(client, store, FakeResults())
+    if unknown:
+        with pytest.raises(ModellixError):
+            await engine.generate(**controls(mode="Submit only"))
+    else:
+        await engine.generate(**controls(mode="Submit only"))
+    client.document = copy.deepcopy(DOCUMENT)
+    client.document["description"] = "Upstream documentation changed after submission"
+    reviewed_hash = ModelSchema(client.document, "vendor/model.2").hash
+    client.fail = False
+    if unknown:
+        with pytest.raises(ModellixError, match="unknown"):
+            await engine.generate(**controls(schema_hash=reviewed_hash))
+    else:
+        result = await engine.generate(**controls(schema_hash=reviewed_hash))
+        assert result["task_id"] == "task-1"
+    assert client.posts == 1
+    await engine.generate(**controls(schema_hash=reviewed_hash, run_nonce="explicit-new-attempt"))
+    assert client.posts == 2
+
+
+@pytest.mark.parametrize("damaged", [None, {}, {"state": "ready"},
+                                    {"state": "submitted", "task_id": False},
+                                    {"state": "unrecognized"}])
+async def test_structurally_damaged_attempt_does_not_create_a_second_task(tmp_path, damaged):
+    client, store = FakeClient(), Store(tmp_path)
+    await Engine(client, store, FakeResults()).generate(**controls(mode="Submit only"))
+    with store.connect() as db:
+        db.execute("UPDATE records SET value=? WHERE kind='attempt'", (json.dumps(damaged),))
+    with pytest.raises(ModellixError, match="damaged"):
+        await Engine(client, Store(tmp_path), FakeResults()).generate(**controls())
+    assert client.posts == 1
+
+
+async def test_generation_deadline_includes_catalog_loading(tmp_path):
+    class SlowCatalog(FakeClient):
+        async def models(self, budget):
+            await budget.sleep(0.1)
+            return await super().models(budget)
+
+    client = SlowCatalog()
+    with pytest.raises(ModellixError, match="deadline"):
+        await Engine(client, Store(tmp_path), FakeResults()).generate(**controls(timeout=0.02))
+    assert client.posts == 0
+
+
+async def test_generation_deadline_includes_waiting_for_an_attempt_lock(tmp_path):
+    from filelock import FileLock
+
+    from modellix.cache import digest
+
+    client, store = FakeClient(), Store(tmp_path)
+    await Engine(client, store, FakeResults()).generate(**controls(mode="Submit only"))
+    key = store.records("attempt")[0][0]
+    with FileLock(str(store.root / (digest("attempt:" + key) + ".lock"))):
+        with pytest.raises(ModellixError, match="deadline"):
+            await asyncio.wait_for(Engine(client, store, FakeResults()).generate(
+                **controls(timeout=0.02)), 0.3)
+    assert client.posts == 1
+
+
+async def test_submission_error_exposes_confirmed_id_and_recovers_without_reposting(tmp_path):
+    class AcceptedError(FakeClient):
+        events = []
+
+        async def submit(self, slug, values, budget):
+            self.posts += 1
+            raise ModellixError("Response failed after acceptance", task_id="task-1")
+
+        def progress(self, **event):
+            self.events.append(event)
+
+    client, store = AcceptedError(), Store(tmp_path)
+    with pytest.raises(ModellixError):
+        await Engine(client, store, FakeResults()).generate(**controls())
+    assert any(e.get("task_id") == "task-1" for e in client.events)
+    result = await Engine(client, store, FakeResults()).generate(**controls())
+    assert result["task_id"] == "task-1" and client.posts == 1

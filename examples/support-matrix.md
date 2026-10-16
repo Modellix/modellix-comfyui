@@ -81,6 +81,12 @@ Local automated results at delivery: **79 pure Python tests** and **6 real Comfy
 
 ## Distribution status and limits
 
+### Review Follow-Up — 2026-10-16
+
+The maintenance review added regression coverage for schema changes retaining the same paid intent, structurally damaged protection records, preparation/lock deadlines, confirmed-ID error recovery, malformed task responses, custom result-directory links, and re-downloading an undecodable result. **108 pure Python tests and 6 real-host tests passed.**
+
+All ten existing example workflows were recovered against production with zero additional generation or upload POSTs. One separate stable image intent exercised a fresh Submit-only POST, followed by Snapshot/Wait recovery and a real local result download; its receipt reported `billing.amount = 0.0306` without a currency field. Browser checks verified that a loading model selection cannot queue the previous model, New Attempt clears recovery state, credential refresh does not silently approve schema drift, and hidden serialization controls remain absent from the native canvas without losing prompt values. The workflow screenshots were captured after these fixes and checks, using the real host; credentials and task identifiers are concealed.
+
 Git clone installation is the supported delivery channel. `python tools/package.py` builds the inspected `custom_nodes/modellix-comfyui` directory archive with root entry point, web extension and workflow resources. Python sdist/wheel metadata is also built and inspected; a wheel is not advertised as a ComfyUI install channel.
 
 Comfy Registry metadata uses publisher `modellix` and version `0.1.0`. Registry/Manager publication and a public Release/Tag are separate actions; this acceptance does not claim those channels are published. Public documentation deployment is checked separately after the official docs main push.

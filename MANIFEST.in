@@ -3,6 +3,7 @@ include __init__.py
 recursive-include web *.js *.css
 recursive-include examples *.json *.md *.png *.wav *.mp4
 recursive-include example_workflows *.json
+recursive-include docs/images *.webp
 exclude AGENTS.md AGENGTS.md
 exclude .env .env.*
 exclude comfy-registry-token.txt

@@ -99,6 +99,10 @@ function statusWidget(node) {
   if (node.comfyClass === "ModellixGenerate") {
     button(actions, "New Attempt", () => {
       widget(node, "run_nonce").value = crypto.randomUUID();
+      widget(node, "resume_task_id").value = "";
+      node.modellixResetRecovery?.();
+      delete node.properties.modellixLastTask;
+      files.replaceChildren();
       status.textContent = "New attempt selected. Next Queue may submit one paid request.";
       node.setDirtyCanvas(true, true);
     });
@@ -111,8 +115,11 @@ function statusWidget(node) {
   }
   const files = element("div", undefined, root);
   node.addDOMWidget("modellix_status", "div", root, { serialize: false, hideOnZoom: false,
-    getMinHeight: () => 110, getMaxHeight: () => 220 });
+    getMinHeight: () => 110, getMaxHeight: () => 140 });
   node.modellixStatus = (data) => {
+    if (!data.task_id && ["uploading", "submitting"].includes(data.stage)) {
+      delete node.properties.modellixLastTask;
+    }
     const tid = data.task_id || node.properties?.modellixLastTask || "";
     if (data.task_id) node.properties.modellixLastTask = data.task_id;
     status.textContent = `${data.cached ? "Existing attempt · " : ""}${data.stage || data.status || "ready"}` +
@@ -120,7 +127,7 @@ function statusWidget(node) {
     files.replaceChildren();
     for (const file of data.manifest || []) {
       const link = element("a", `${file.type}: ${file.filename}`, files);
-      link.href = api.apiURL(`/view?filename=${encodeURIComponent(file.filename)}&subfolder=modellix&type=output`);
+      link.href = api.apiURL(`/modellix/results/${encodeURIComponent(file.filename)}`);
       link.target = "_blank";
       link.rel = "noopener";
     }

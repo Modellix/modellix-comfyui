@@ -180,6 +180,8 @@ class Client:
         finally:
             queue.release()
         data = body.get("data", {})
+        if not isinstance(data, dict):
+            raise ModellixError("Malformed task response.", task_id=tid)
         if data.get("task_id") != tid:
             raise ModellixError("Task identity mismatch.", task_id=tid)
         if data.get("status") not in ("pending", "processing", "success", "failed", "canceled"):
@@ -192,7 +194,7 @@ class Client:
         form.add_field("file", blob.content, filename=blob.filename, content_type=blob.mime)
         body = await self.request("POST", "/api/v1/media/files", budget, data=form)
         data = body.get("data", {})
-        if not isinstance(data.get("url"), str) or not data.get("file_id"):
+        if not isinstance(data, dict) or not isinstance(data.get("url"), str) or not data.get("file_id"):
             raise ModellixError("Upload outcome unknown: missing file metadata.", unknown=True)
         return data
 
@@ -264,6 +266,8 @@ class Client:
 
 def resources(data):
     result = data.get("result") or {}
+    if not isinstance(result, dict):
+        raise ModellixError("Malformed task result.", task_id=data.get("task_id"))
     items = result.get("resources", data.get("resources", []))
     if not isinstance(items, list) or not items:
         raise ModellixError("Successful task has no resources.", task_id=data.get("task_id"))

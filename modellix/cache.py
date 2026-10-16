@@ -19,6 +19,32 @@ def digest(value):
                                      ensure_ascii=False).encode()).hexdigest()
 
 
+def protected_record(kind, value):
+    """A valid JSON null/partial record is not proof that no paid request exists."""
+    if kind not in ("attempt", "upload", "intent"):
+        return
+    valid = isinstance(value, dict)
+    if valid and kind == "intent":
+        valid = all(isinstance(value.get(field), str) and value[field]
+                    for field in ("schema_hash", "attempt"))
+    elif valid and kind == "attempt":
+        state = value.get("state")
+        valid = state in ("prepared", "submitting", "outcome_unknown", "submitted", "waiting",
+                          "downloading", "ready", "failed", "canceled")
+        if state in ("submitted", "waiting", "downloading", "ready", "failed", "canceled"):
+            valid = valid and isinstance(value.get("task_id"), str) and bool(value["task_id"])
+    elif valid:
+        valid = value.get("state") in ("submitting", "outcome_unknown", "ready")
+        if "nonce" in value:
+            valid = valid and isinstance(value["nonce"], str) and bool(value["nonce"])
+        if value.get("state") == "ready":
+            data = value.get("data")
+            valid = (valid and isinstance(data, dict) and isinstance(data.get("url"), str)
+                     and bool(data["url"]) and bool(data.get("file_id")))
+    if not valid:
+        raise ModellixError("Attempt record damaged; automatic replay is disabled.")
+
+
 class Store:
     def __init__(self, root):
         self.root = Path(root)
@@ -44,14 +70,20 @@ class Store:
         with self.connect() as db:
             row = db.execute("SELECT value,expires FROM records WHERE kind=? AND id=?",
                              (kind, key)).fetchone()
-        if not row or (not stale and row[1] and row[1] < time.time()):
+        if not row:
             return None
         try:
-            return json.loads(row[0])
+            value = json.loads(row[0])
         except ValueError:
-            if kind in ("attempt", "upload"):
+            if kind in ("attempt", "upload", "intent"):
                 raise ModellixError("Attempt record damaged; automatic replay is disabled.") from None
             return None
+        protected_record(kind, value)
+        permanent = kind in ("attempt", "intent") or (
+            kind == "upload" and value["state"] != "ready")
+        if not permanent and not stale and row[1] and row[1] < time.time():
+            return None
+        return value
 
     def put(self, kind, key, value, ttl=0):
         try:
@@ -83,14 +115,19 @@ class Store:
                                          "AND id=?", (context,)).fetchone()[0])
 
     @asynccontextmanager
-    async def lock(self, key):
+    async def lock(self, key, budget=None):
         lock = FileLock(str(self.root / (digest(key) + ".lock")))
         while True:
+            if budget:
+                budget.remaining()
             try:
                 lock.acquire(timeout=0)
                 break
             except Timeout:
-                await asyncio.sleep(0.1)
+                if budget:
+                    await budget.sleep(0.1)
+                else:
+                    await asyncio.sleep(0.1)
         try:
             yield
         finally:

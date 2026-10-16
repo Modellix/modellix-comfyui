@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ("__init__.py", "LICENSE", "README.md", "requirements.txt", "pyproject.toml")
-FOLDERS = ("modellix", "web", "examples", "example_workflows")
+FOLDERS = ("modellix", "web", "examples", "example_workflows", "docs/images")
 
 
 def main():

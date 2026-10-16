@@ -118,7 +118,7 @@ def encode(kind, item):
 
 async def upload_blob(blob, client, store, budget, nonce="initial"):
     key = digest([client.credential.context, blob.hash])
-    async with store.lock("upload:" + key):
+    async with store.lock("upload:" + key, budget):
         previous = store.get("upload", key)
         if previous:
             if previous.get("state") != "ready" and previous.get("nonce", "initial") == nonce:
@@ -126,6 +126,7 @@ async def upload_blob(blob, client, store, budget, nonce="initial"):
                                     "before explicitly choosing New Upload Attempt.", unknown=True)
             if previous.get("state") == "ready":
                 return previous["data"]
+        budget.remaining()
         store.put("upload", key, {"state": "submitting", "nonce": nonce})
         try:
             data = await client.upload(blob, budget)
@@ -200,7 +201,7 @@ class Results:
         return total
 
     async def materialize(self, client, data, budget):
-        async with self.store.lock("result-cache"):
+        async with self.store.lock("result-cache", budget):
             return await self._materialize(client, data, budget)
 
     async def _materialize(self, client, data, budget):
@@ -244,9 +245,12 @@ class Results:
             if kind in outputs:
                 try:
                     outputs[kind].append(await asyncio.to_thread(decode, path, kind))
-                except ModellixError:
-                    raise
-                except Exception:
+                except Exception as error:
+                    # A checksum proves local byte stability, not that the download decodes.
+                    # Keep the expired index for safe cleanup, but refetch on task recovery.
+                    self.store.put("result", key, {**record, "created": 0}, ttl=-1)
+                    if isinstance(error, ModellixError):
+                        raise
                     raise ModellixError("Media decoding failed. Resume the existing task ID.",
                                         task_id=data["task_id"]) from None
             pin(path)

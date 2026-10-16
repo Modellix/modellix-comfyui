@@ -178,3 +178,21 @@ async def test_actual_task_status_protocol(status):
 def test_success_without_media_is_an_error(value):
     with pytest.raises(ModellixError):
         resources({"task_id": "test", "result": value})
+
+
+@pytest.mark.parametrize("data", [None, [], "invalid"])
+async def test_malformed_task_data_retains_recoverable_id(data):
+    async def handle(request):
+        return web.json_response({"code": 0, "data": data})
+
+    async with api(handle) as origin, Client(Credential("fake", "c"), api=origin) as client:
+        with pytest.raises(ModellixError) as error:
+            await client.query("test-task", Deadline(2))
+        assert error.value.task_id == "test-task"
+
+
+@pytest.mark.parametrize("result", ["invalid", ["resource"]])
+def test_malformed_success_result_is_a_recoverable_error(result):
+    with pytest.raises(ModellixError) as error:
+        resources({"task_id": "test-task", "result": result})
+    assert error.value.task_id == "test-task"

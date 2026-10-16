@@ -145,11 +145,11 @@ class Engine:
         if mode not in ("Wait", "Submit only"):
             raise ModellixError("Unknown execution mode.")
         catalog = Catalog(self.store, self.client)
-        models = await catalog.models()
+        models = await catalog.models(budget=budget)
         model_entry = next((m for m in models if m.get("slug") == model_slug), None)
         if not model_entry or model_entry.get("type") not in MEDIA_TYPES:
             raise ModellixError("Selected model is absent from your media catalog or has unsupported output.")
-        schema = await catalog.schema(model_slug, refresh=True)
+        schema = await catalog.schema(model_slug, refresh=True, budget=budget)
         if schema_hash and schema.hash != schema_hash:
             raise ModellixError("Model schema changed. Refresh and review fields before a paid submission.")
         values, branches = unpack_parameters(parameters_json)
@@ -158,13 +158,19 @@ class Engine:
         key = digest([self.client.credential.context, node_instance_id, model_slug,
                       schema.hash, values, run_nonce])
         intent = digest([self.client.credential.context, node_instance_id, model_slug, values, run_nonce])
-        async with self.store.lock("intent:" + intent):
+        async with self.store.lock("intent:" + intent, budget):
             reviewed = self.store.get("intent", intent)
-            if reviewed and reviewed["schema_hash"] != schema.hash and not schema_hash:
-                raise ModellixError("Schema changed since this attempt. Supply the reviewed schema_hash "
-                                    "or explicitly select New Attempt; automatic replay is disabled.")
-            self.store.put("intent", intent, {"schema_hash": schema.hash, "attempt": key})
-        async with self.store.lock("attempt:" + key):
+            if reviewed and reviewed["schema_hash"] != schema.hash:
+                if not schema_hash:
+                    raise ModellixError("Schema changed since this attempt. Supply the reviewed schema_hash "
+                                        "or explicitly select New Attempt; automatic replay is disabled.")
+                # Reviewing new metadata does not authorize replaying an unchanged paid intent.
+                key = reviewed["attempt"]
+                if self.store.get("attempt", key) is None:
+                    raise ModellixError("Attempt record damaged or missing; automatic replay is disabled.")
+            else:
+                self.store.put("intent", intent, {"schema_hash": schema.hash, "attempt": key})
+        async with self.store.lock("attempt:" + key, budget):
             self.attempt_key = key
             previous = self.store.get("attempt", key)
             if previous and previous.get("state") in ("submitting", "outcome_unknown"):
@@ -182,6 +188,7 @@ class Engine:
                             for blob in blobs]
                     replace_pointer(values, pointer, urls if is_array else urls[0])
                 schema.validate(values)
+                budget.remaining()
                 record["state"] = "submitting"
                 self.store.put("attempt", key, record)
                 self.progress("submitting")
@@ -191,6 +198,8 @@ class Engine:
                     tid = getattr(error, "task_id", None)
                     record.update(state="submitted" if tid else "outcome_unknown", task_id=tid)
                     self.store.put("attempt", key, record)
+                    if tid:
+                        self.progress("submission_error", tid)
                     raise
                 record.update(state="submitted", task_id=tid)
                 self.store.put("attempt", key, record)
