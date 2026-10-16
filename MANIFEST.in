@@ -10,5 +10,6 @@ global-exclude *.key *.pem *apikey*.txt *token*.txt *.log *.pyc
 prune .agents
 prune .docs
 prune .venv
+prune .ci-venv
 prune .cache
 prune outputs

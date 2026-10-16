@@ -26,3 +26,4 @@ comfy-registry-token.txt
 *.log
 .cache/
 outputs/
+.ci-venv/

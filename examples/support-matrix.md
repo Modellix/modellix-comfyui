@@ -58,7 +58,7 @@ Actual `billing.status` / `billing.amount` receipts were read back; use the serv
 
 | Item | Evidence |
 | --- | --- |
-| AC-01 Installation and registration | Four real V3 nodes loaded; directory archive cold import validated all schemas, frontend assets and templates |
+| AC-01 Installation and registration | Four real V3 nodes loaded; both an inspected directory archive and a fresh GitHub main clone cold-loaded all schemas, frontend assets and templates |
 | AC-02 Credentials | Priority/clear/insecure-backend tests; actual Windows secure-store restart test; Settings session/clear/environment UI; workflow/history/settings/media/archives scanned for actual secrets |
 | AC-03 Dynamic models | Live catalog, readable schema sweep, typed fields, independent nested combination choices, saved parameters and bindings |
 | AC-04 T2I | Actual production Queue → Preview Image |
@@ -68,7 +68,7 @@ Actual `billing.status` / `billing.amount` receipts were read back; use the serv
 | AC-08 Cancel | Actual host interruption flag exits a supervised local wait within two seconds; in-flight HTTP cancellation and unknown-submission protection. Codec threads may finish separately |
 | AC-09 Recovery | Existing IDs and cross-restart attempts recovered with zero new generation/upload calls |
 | AC-10 Examples and packaging | Ten UI/API examples, save/reopen and actual cached-host execution, one-source fixture checks, directory archive cold loading and secret scans |
-| AC-11 Official documentation | Tutorial, sidebar and Product Updates maintained in the separate official docs repository; Mintlify validation, broken-link check and rendered local pages |
+| AC-11 Official documentation | Tutorial, sidebar and Product Updates maintained in the separate official docs repository; Mintlify validation, broken-link check and rendered local pages; successful Mintlify deployment and public tutorial read-back |
 | AC-12 Execution modes | Fresh Submit only has one POST and no polling/download; Snapshot and Wait retrieve the same task; native output blockers tested per socket |
 | AC-13 Native media and lists | Actual image/video/audio chains, two-image batch; real-host different-size multi-resource tensors, stereo sample-rate round trip and preserved video audio track |
 | AC-14 Upload Media | Actual standalone image/video/audio upload workflows, content reuse and unknown-upload replay protection |
