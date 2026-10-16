@@ -18,20 +18,20 @@ Python >=3.10 and ComfyUI >=0.40.0 are the declared baseline. The CI matrix sepa
 
 ## Live catalog and schemas
 
-The authenticated production catalog contained **174 models** across eight raw types. All 174 public schema URLs were checked: **172 valid request schemas**, two known 404s. The readable media-output set contains **167 models**. All saved readable schemas parse with the package's bounded parser. That is schema coverage, not 167 paid generations.
+The final authenticated production catalog contained **172 models** across eight raw types. All 172 public schema URLs were rechecked: **172 valid request schemas**, no missing in-catalog schemas. The readable media-output set contains **167 models**. All current readable schemas parse with the package's bounded parser. That is schema coverage, not 167 paid generations.
 
 | Raw model type | Catalog count | Package behavior |
 | --- | ---: | --- |
 | text-to-image | 21 | Native IMAGE results |
 | image-to-image | 24 | Native IMAGE input/output; media references follow each schema |
 | text-to-video | 27 | Native VIDEO results |
-| image-to-video | 62 | Frame/reference branches and native image inputs |
+| image-to-video | 60 | Frame/reference branches and native image inputs |
 | video-to-video | 24 | Native VIDEO input/output and optional references |
 | text-to-speech | 9 | Native AUDIO results |
 | speech-to-speech | 2 | Native AUDIO reference and result |
 | speech-to-text | 5 | Listed with an unsupported-output explanation; text is outside this contract |
 
-Excluded external schema issues: `vidu/vidu-q2-ns-i2v` and `vidu/vidu-new-ns-i2v` returned 404. These are skipped, not counted as passing/failing client models, and do not block delivery. The generic schema-unavailable error remains supported. LoRA is outside the current Modellix capability and this package's scope.
+During initial acceptance the catalog had 174 entries, including `vidu/vidu-q2-ns-i2v` and `vidu/vidu-new-ns-i2v` with missing schemas. The service subsequently removed those two invalid entries. The final catalog/schema sweep confirms the issue is resolved; old URLs returning 404 are normal missing resources. The client has no model-specific exclusion list: refreshing uses the current catalog, and historical references to removed models produce an actionable error. LoRA is outside the current Modellix capability and this package's scope.
 
 ## Actual production generation
 
@@ -74,7 +74,7 @@ Actual `billing.status` / `billing.amount` receipts were read back; use the serv
 | AC-14 Upload Media | Actual standalone image/video/audio upload workflows, content reuse and unknown-upload replay protection |
 | AC-15 URL List | Ordered/duplicate/comma-preserving construction; actual merged three-reference generation; schema type/array constraints |
 | AC-16 Cache and persistence | Atomic SQLite records, file locks, credential isolation, result checksums, protected live leases, expired results/abandoned-part cleanup, unknown/failed/canceled attempt protection |
-| AC-17 Type/schema coverage | Seven live media categories; readable schema parser sweep; two Vidu exclusions and text-output explanation |
+| AC-17 Type/schema coverage | Seven live media categories; final 172/172 schema sweep and parser checks; removed-model/404 handling and text-output explanation |
 | AC-18 Interaction | Model search/category/branch/source controls, conflict replacement, task recovery/new-attempt UI, key controls, save/reopen and 1200/1440/1920 viewport checks |
 
 Local automated results at delivery: **79 pure Python tests** and **6 real ComfyUI host tests**. The host tests use actual ComfyUI types, codecs, execution/list machinery and connection validation, not global ComfyUI stubs. Controlled tests cover failures that should not be manufactured by spending real balance.
