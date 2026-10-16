@@ -1,0 +1,366 @@
+{
+  "servers": [
+    {
+      "url": "https://api.modellix.ai/api/v1/alibaba/cosyvoice-clone"
+    }
+  ],
+  "post": {
+    "description": "[Core Function] CosyVoice Clone clones a speaker from a public reference audio URL and synthesizes new speech in one async request; only the final audio is returned. [Strengths] No voice enrollment management; language_hint applies to both cloning and synthesis; SSML, hot_fix, and prosody controls. [Best For] One-off cloned narration and demos where a lasting voice library is not needed. [Limitations] Do NOT use this to obtain a reusable voice library entry; the cloned voice is temporary and is not returned. Reference URL must be publicly accessible. model must be cosyvoice-v3.5-plus or cosyvoice-v3.5-flash. [Routing] Choose cosyvoice-v3.5-plus for higher speech quality; cosyvoice-v3.5-flash for lower latency.",
+    "operationId": "cosyvoiceClone",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "example": {
+            "enable_preprocess": false,
+            "format": "mp3",
+            "language_hint": "en",
+            "model": "cosyvoice-v3.5-plus",
+            "text": "There is a large garden behind my house.",
+            "url": "https://example.com/reference.wav"
+          },
+          "schema": {
+            "description": "One-shot voice clone + TTS request. Required: model, url, text. The cloned voice is temporary and is not returned.",
+            "properties": {
+              "bit_rate": {
+                "description": "Audio bit rate in kbps. Optional. Range 6–510. Only supported when format is opus; do not send for mp3, pcm, or wav.",
+                "example": 32,
+                "maximum": 510,
+                "minimum": 6,
+                "type": "integer"
+              },
+              "enable_preprocess": {
+                "default": false,
+                "description": "Enable noise reduction and audio enhancement before cloning. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "enable_ssml": {
+                "default": false,
+                "description": "Whether to parse text as SSML. Default false. When true, text must follow Alibaba CosyVoice SSML rules.",
+                "example": false,
+                "type": "boolean"
+              },
+              "format": {
+                "default": "mp3",
+                "description": "Output audio encoding format. Default mp3.",
+                "enum": [
+                  "mp3",
+                  "pcm",
+                  "wav",
+                  "opus"
+                ],
+                "example": "mp3",
+                "type": "string"
+              },
+              "hot_fix": {
+                "description": "Text hot-fix before synthesis. Optional object with pronunciation (custom pinyin) and replace (text substitution) arrays, per Alibaba CosyVoice HTTP API.",
+                "example": {
+                  "replace": [
+                    {
+                      "Modellix": "Modelix"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              "instruction": {
+                "description": "Optional speaking-style instruction. Weighted length ≤100 (CJK ideographs count as 2).",
+                "example": "Speak in a friendly customer-service tone.",
+                "type": "string"
+              },
+              "language_hint": {
+                "default": "zh",
+                "description": "Language hint for both cloning and synthesis. Default zh.",
+                "enum": [
+                  "zh",
+                  "en",
+                  "fr",
+                  "de",
+                  "ja",
+                  "ko",
+                  "ru",
+                  "pt",
+                  "th",
+                  "id",
+                  "vi"
+                ],
+                "example": "en",
+                "type": "string"
+              },
+              "max_prompt_audio_length": {
+                "default": 10,
+                "description": "Max reference audio duration in seconds used for cloning (3.0–30.0). Default 10.0.",
+                "example": 10,
+                "maximum": 30,
+                "minimum": 3,
+                "type": "number"
+              },
+              "model": {
+                "description": "Target CosyVoice v3.5 TTS model used for synthesis after cloning.",
+                "enum": [
+                  "cosyvoice-v3.5-plus",
+                  "cosyvoice-v3.5-flash"
+                ],
+                "type": "string"
+              },
+              "pitch": {
+                "default": 1,
+                "description": "Pitch multiplier. Default 1.0. Range 0.5–2.0.",
+                "example": 1,
+                "maximum": 2,
+                "minimum": 0.5,
+                "type": "number"
+              },
+              "rate": {
+                "default": 1,
+                "description": "Speech rate multiplier. Default 1.0. Range 0.5–2.0.",
+                "example": 1,
+                "maximum": 2,
+                "minimum": 0.5,
+                "type": "number"
+              },
+              "sample_rate": {
+                "default": 22050,
+                "description": "Output sample rate in Hz. Default 22050.",
+                "enum": [
+                  8000,
+                  16000,
+                  22050,
+                  24000,
+                  44100,
+                  48000
+                ],
+                "example": 24000,
+                "type": "integer"
+              },
+              "seed": {
+                "default": 0,
+                "description": "Random seed. Default 0. Range 0–65535.",
+                "example": 0,
+                "maximum": 65535,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "text": {
+                "description": "Text to synthesize with the temporarily cloned voice. Required. Max 20,000 Unicode characters. Supports plain text and SSML (set enable_ssml to true).",
+                "example": "There is a large garden behind my house.",
+                "maxLength": 20000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "url": {
+                "description": "Publicly accessible reference audio URL for cloning.",
+                "example": "https://example.com/reference.wav",
+                "maxLength": 2048,
+                "minLength": 1,
+                "type": "string"
+              },
+              "volume": {
+                "default": 50,
+                "description": "Output volume. Default 50. Range 0–100.",
+                "example": 50,
+                "maximum": 100,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "model",
+              "url",
+              "text"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 0,
+              "data": {
+                "get_result": {
+                  "method": "GET",
+                  "url": "https://api.modellix.ai/api/v1/tasks/task-cosyvoice-clone-001"
+                },
+                "model_id": "alibaba/cosyvoice-clone",
+                "status": "pending",
+                "task_id": "task-cosyvoice-clone-001"
+              },
+              "message": "success"
+            },
+            "schema": {
+              "description": "Response object for asynchronous task submission.",
+              "properties": {
+                "code": {
+                  "description": "Response code, 0 indicates success",
+                  "example": 0,
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "Task submission details. Poll GET /api/v1/tasks/{task_id} until status is success; audio appears in result.resources.",
+                  "properties": {
+                    "get_result": {
+                      "description": "Endpoint to query the task result. See Common API: Query Task Result.",
+                      "properties": {
+                        "method": {
+                          "example": "GET",
+                          "type": "string"
+                        },
+                        "url": {
+                          "example": "https://api.modellix.ai/api/v1/tasks/task-cosyvoice-clone-001",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "model_id": {
+                      "description": "Model ID in provider/model format",
+                      "example": "alibaba/cosyvoice-clone",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Initial task status",
+                      "enum": [
+                        "pending",
+                        "processing"
+                      ],
+                      "example": "pending",
+                      "type": "string"
+                    },
+                    "task_id": {
+                      "description": "Unique task identifier for polling",
+                      "example": "task-cosyvoice-clone-001",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "task_id",
+                    "model_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "Response message",
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Task submitted successfully. Poll GET /api/v1/tasks/{task_id} until the task completes; synthesized audio is returned on the task result."
+      },
+      "400": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Invalid request parameters"
+      },
+      "401": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unauthorized - Invalid or missing API Key"
+      },
+      "429": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Rate limit exceeded"
+      },
+      "500": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Internal server error"
+      }
+    },
+    "summary": "CosyVoice Clone",
+    "x-mint": {
+      "href": "alibaba/cosyvoice-clone"
+    }
+  }
+}

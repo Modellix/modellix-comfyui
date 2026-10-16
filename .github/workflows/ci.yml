@@ -1,4 +1,4 @@
-name: Project setup
+name: Node package checks
 
 on:
   push:
@@ -32,5 +32,24 @@ jobs:
         run: python -m pip check
       - name: Lint available Python source
         run: python -m ruff check .
+      - name: Protocol and state tests (no ComfyUI stubs)
+        run: python -m pytest tests/unit -q
+      - name: Inspect directory-install archive
+        run: python tools/package.py
       - name: Check whitespace
         run: git diff --check
+
+  host:
+    name: Real ComfyUI v0.40.0 CPU integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: git clone --depth 1 --branch v0.40.0 https://github.com/Comfy-Org/ComfyUI.git .host
+      - run: python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install -r .host/requirements.txt -e '.[dev]'
+      - name: Test native media, typed connections, list aggregation and cancellation
+        run: PYTHONPATH="$PWD/.host:$PWD" python -m pytest tests/host -q

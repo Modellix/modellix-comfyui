@@ -1,0 +1,313 @@
+{
+  "servers": [
+    {
+      "url": "https://api.modellix.ai/api/v1/google/nano-banana-2-lite"
+    }
+  ],
+  "post": {
+    "description": "[Core Function] Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image) is the lightweight, cost-efficient text-to-image model of the Nano Banana 2 family. [Strengths] It generates images even faster and more cheaply than Nano Banana 2, well suited to high-volume creative and stylized output at lower cost. [Best For] Highly recommended for: high-volume batch generation, quick drafts and thumbnails, and cost-sensitive creative iteration. [Limitations] Do NOT use this model when you need maximum detail, high-end photorealism, or the richest quality; use Nano Banana 2 or Nano Banana Pro instead. [Routing] Choose the Lite variant when cost and throughput matter more than peak quality; step up to Nano Banana 2 for richer results.",
+    "operationId": "nanoBanana2LiteT2IAsync",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "examples": {
+            "text_only": {
+              "summary": "Text-to-image",
+              "value": {
+                "prompt": "A colorful abstract painting with flowing shapes"
+              }
+            },
+            "with_options": {
+              "summary": "With aspect ratio and resolution",
+              "value": {
+                "aspectRatio": "1:1",
+                "imageSize": "1K",
+                "prompt": "Minimalist geometric art with bold colors"
+              }
+            }
+          },
+          "schema": {
+            "properties": {
+              "aspectRatio": {
+                "default": "1:1",
+                "description": "Image aspect ratio (14 options supported)",
+                "enum": [
+                  "1:1",
+                  "1:4",
+                  "1:8",
+                  "2:3",
+                  "3:2",
+                  "3:4",
+                  "4:1",
+                  "4:3",
+                  "4:5",
+                  "5:4",
+                  "8:1",
+                  "9:16",
+                  "16:9",
+                  "21:9"
+                ],
+                "example": "1:1",
+                "type": "string"
+              },
+              "imageSize": {
+                "description": "Output image resolution (Flash Lite supports 1K only)",
+                "enum": [
+                  "1K"
+                ],
+                "example": "1K",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "Image description text",
+                "example": "A colorful abstract painting with flowing shapes",
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "prompt"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 0,
+              "data": {
+                "get_result": {
+                  "method": "GET",
+                  "url": "https://api.modellix.ai/api/v1/tasks/task-nb2lite-001"
+                },
+                "model_id": "google/nano-banana-2-lite",
+                "status": "pending",
+                "task_id": "task-nb2lite-001"
+              },
+              "message": "success"
+            },
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Response code, 0 indicates success",
+                  "example": 0,
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "Detailed data about the submitted asynchronous task.",
+                  "properties": {
+                    "get_result": {
+                      "description": "API information to query the task result",
+                      "properties": {
+                        "method": {
+                          "description": "HTTP method",
+                          "example": "GET",
+                          "type": "string"
+                        },
+                        "url": {
+                          "description": "Full URL to query the task result",
+                          "example": "https://api.modellix.ai/api/v1/tasks/task-abc123",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "model_id": {
+                      "description": "Model ID in `provider/model` format",
+                      "example": "google/nano-banana",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Task status",
+                      "enum": [
+                        "pending",
+                        "processing"
+                      ],
+                      "example": "pending",
+                      "type": "string"
+                    },
+                    "task_id": {
+                      "description": "Unique task identifier for polling",
+                      "example": "task-abc123",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "task_id",
+                    "model_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "Response message",
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Task submitted successfully"
+      },
+      "400": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 400,
+              "message": "Invalid parameters: parameter 'prompt' is required"
+            },
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Error code (equals HTTP status code)",
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "Error message in format 'Category: detail'",
+                  "example": "Invalid parameters: parameter 'prompt' is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Invalid request parameters"
+      },
+      "401": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 401,
+              "message": "Authentication failed: invalid API key"
+            },
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Error code (equals HTTP status code)",
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "Error message in format 'Category: detail'",
+                  "example": "Invalid parameters: parameter 'prompt' is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unauthorized - Invalid or missing API Key"
+      },
+      "429": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 429,
+              "message": "Rate limit exceeded: 100 requests per minute, retry after 60 seconds"
+            },
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Error code (equals HTTP status code)",
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "Error message in format 'Category: detail'",
+                  "example": "Invalid parameters: parameter 'prompt' is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Too many requests - Rate limit exceeded",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "description": "Maximum requests per minute",
+            "schema": {
+              "example": 100,
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "Remaining quota in current window",
+            "schema": {
+              "example": 0,
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Reset": {
+            "description": "Rate limit window reset time (Unix timestamp)",
+            "schema": {
+              "example": 1704067260,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "500": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 500,
+              "message": "Internal server error"
+            },
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Error code (equals HTTP status code)",
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "Error message in format 'Category: detail'",
+                  "example": "Invalid parameters: parameter 'prompt' is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Internal server error"
+      }
+    },
+    "summary": "Nano Banana 2 Lite",
+    "x-mint": {
+      "href": "google/nano-banana-2-lite"
+    }
+  }
+}

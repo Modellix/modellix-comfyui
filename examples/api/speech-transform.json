@@ -1,0 +1,43 @@
+{
+  "1": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "minimax/speech-2.8-turbo",
+      "parameters_json": "{\"version\": 1, \"values\": {\"text\": \"Welcome to Modellix. This is a synthetic voice sample for testing a media workflow. A small wooden sailboat floats quietly on the blue lake. Gentle waves move toward the shore as sunlight crosses the water. Thank you for listening to this example.\", \"voice_id\": \"English_expressive_narrator\", \"format\": \"wav\", \"sample_rate\": 16000, \"channel\": 1}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": []}",
+      "node_instance_id": "example-v1-speech-transform-1",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800
+    }
+  },
+  "2": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "alibaba/cosyvoice-clone",
+      "parameters_json": "{\"version\": 1, \"values\": {\"model\": \"cosyvoice-v3.5-flash\", \"text\": \"This is a synthetic speech transformation test using a generated reference voice.\", \"language_hint\": \"en\", \"format\": \"wav\", \"sample_rate\": 16000}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": [{\"socket\": \"audios.slot0\", \"pointer\": \"/url\"}]}",
+      "node_instance_id": "example-v1-speech-transform-2",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800,
+      "audios.slot0": [
+        "1",
+        2
+      ]
+    }
+  },
+  "3": {
+    "class_type": "PreviewAudio",
+    "inputs": {
+      "audio": [
+        "2",
+        2
+      ]
+    }
+  }
+}

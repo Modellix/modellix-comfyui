@@ -1,0 +1,19 @@
+.modellix-controls { box-sizing: border-box; color: var(--input-text, #ddd); background: var(--comfy-menu-bg, #222); font: 13px/1.45 system-ui, sans-serif; padding: 10px; border-radius: 6px; overflow: auto; min-width: 0; width: 100%; }
+.modellix-controls * { box-sizing: border-box; }
+.modellix-controls p { margin: 4px 0 8px; overflow-wrap: anywhere; }
+.modellix-controls input, .modellix-controls textarea, .modellix-controls select { font: inherit; width: 100%; color: inherit; background: var(--comfy-input-bg, #333); border: 1px solid var(--border-color, #666); border-radius: 4px; padding: 6px; min-width: 0; }
+.modellix-controls input[type=checkbox] { width: auto; }
+.modellix-controls textarea { min-height: 70px; resize: vertical; }
+.modellix-controls button { cursor: pointer; font: inherit; color: inherit; background: var(--comfy-input-bg, #333); border: 1px solid var(--border-color, #666); border-radius: 4px; padding: 5px 8px; }
+.modellix-controls button:focus-visible, .modellix-controls input:focus-visible, .modellix-controls select:focus-visible { outline: 2px solid #a8a0ff; outline-offset: 2px; }
+.modellix-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.modellix-controls a { color: #bdb6ff; display: block; overflow-wrap: anywhere; }
+.modellix-controls label { display: block; margin: 8px 0 4px; }
+.modellix-controls small { display: block; opacity: .75; overflow-wrap: anywhere; margin: 3px 0; }
+.modellix-field { border-top: 1px solid var(--border-color, #555); padding: 6px 0; }
+.modellix-field-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.modellix-field-head select { width: auto; max-width: 190px; margin-left: auto; }
+.modellix-array-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.modellix-array-row input { flex: 1; }
+.modellix-key { max-width: 600px; }
+.modellix-form { max-height: 650px; }

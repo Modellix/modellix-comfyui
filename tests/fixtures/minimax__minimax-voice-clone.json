@@ -1,0 +1,507 @@
+{
+  "servers": [
+    {
+      "url": "https://api.modellix.ai/api/v1/minimax/minimax-voice-clone"
+    }
+  ],
+  "post": {
+    "description": "[Core Function] MiniMax Voice Clone clones a speaker from a public reference audio URL and synthesizes new speech in one async request; only the final audio is returned. [Strengths] No voice enrollment management; optional language_boost for clone and synthesis; prosody controls (speed, volume, pitch, emotion); pronunciation overrides; voice effects; flexible audio formats. [Best For] One-off cloned narration, personalized prompts, and demos where a lasting voice library is not needed. [Limitations] Do NOT use this to obtain a reusable voice library entry; the cloned voice is temporary and is not returned. audio_url must be publicly reachable (mp3/m4a/wav, 10s–5min, ≤20 MB). [Routing] Choose speech-2.8-hd for higher quality; speech-2.8-turbo for lower latency or cost. Paralinguistic tags such as (laughs) in text are supported on both speech-2.8-hd and speech-2.8-turbo.",
+    "operationId": "minimaxVoiceClone",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "examples": {
+            "basic": {
+              "summary": "Minimal clone + TTS",
+              "value": {
+                "audio_url": "https://example.com/reference.wav",
+                "model": "speech-2.8-turbo",
+                "text": "Welcome to Modellix speech synthesis."
+              }
+            },
+            "with_clone_prompt": {
+              "summary": "Optional short prompt_audio to stabilize clone",
+              "value": {
+                "audio_url": "https://example.com/reference.wav",
+                "language_boost": "English",
+                "model": "speech-2.8-hd",
+                "prompt_audio": "https://example.com/short-sample.wav",
+                "prompt_text": "Short sample content.",
+                "text": "This is the longer text for final synthesis."
+              }
+            },
+            "with_controls": {
+              "summary": "With language boost and prosody",
+              "value": {
+                "audio_url": "https://example.com/reference.wav",
+                "format": "mp3",
+                "language_boost": "English",
+                "model": "speech-2.8-hd",
+                "need_noise_reduction": false,
+                "pitch": 0,
+                "sample_rate": 32000,
+                "speed": 1,
+                "text": "There is a large garden behind my house.",
+                "vol": 1
+              }
+            }
+          },
+          "schema": {
+            "description": "One-shot voice clone + TTS request. Required: model, audio_url, text. Optional: prompt_audio/prompt_text, clone processing, language_boost, AIGC watermark, TTS prosody/audio/pronunciation/voice effects, and subtitles. The cloned voice is temporary and is not returned.",
+            "properties": {
+              "aigc_watermark": {
+                "default": false,
+                "description": "Whether to append an AIGC watermark to the returned audio. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "audio_url": {
+                "description": "Primary reference audio URL for cloning. Must be publicly accessible without auth. Formats: mp3, m4a, wav. Duration 10 seconds–5 minutes. File size ≤20 MB. Distinct from prompt_audio.",
+                "example": "https://example.com/reference.wav",
+                "maxLength": 2048,
+                "minLength": 1,
+                "type": "string"
+              },
+              "bitrate": {
+                "default": 128000,
+                "description": "Audio bitrate. Default 128000. Only effective when format is mp3; ignored for other formats.",
+                "enum": [
+                  32000,
+                  64000,
+                  128000,
+                  256000
+                ],
+                "example": 128000,
+                "type": "integer"
+              },
+              "channel": {
+                "default": 1,
+                "description": "Output channel count. 1 is mono, 2 is stereo. Default 1.",
+                "enum": [
+                  1,
+                  2
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "emotion": {
+                "description": "Optional emotion control. Leave unset to let the model infer from text.",
+                "enum": [
+                  "happy",
+                  "sad",
+                  "angry",
+                  "fearful",
+                  "disgusted",
+                  "surprised",
+                  "calm"
+                ],
+                "example": "happy",
+                "type": "string"
+              },
+              "force_cbr": {
+                "default": false,
+                "description": "Force constant bitrate encoding. Optional; typically unused for standard async synthesis. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "format": {
+                "default": "mp3",
+                "description": "Output audio encoding format. Default mp3. Result audio is returned as a URL on the completed task.",
+                "enum": [
+                  "mp3",
+                  "pcm",
+                  "flac",
+                  "wav"
+                ],
+                "example": "mp3",
+                "type": "string"
+              },
+              "language_boost": {
+                "description": "Optional language or dialect boost for both cloning and synthesis. Omit for default behavior. Use auto to let the model decide.",
+                "enum": [
+                  "Chinese",
+                  "Chinese,Yue",
+                  "English",
+                  "Arabic",
+                  "Russian",
+                  "Spanish",
+                  "French",
+                  "Portuguese",
+                  "German",
+                  "Turkish",
+                  "Dutch",
+                  "Ukrainian",
+                  "Vietnamese",
+                  "Indonesian",
+                  "Japanese",
+                  "Italian",
+                  "Korean",
+                  "Thai",
+                  "Polish",
+                  "Romanian",
+                  "Greek",
+                  "Czech",
+                  "Finnish",
+                  "Hindi",
+                  "Bulgarian",
+                  "Danish",
+                  "Hebrew",
+                  "Malay",
+                  "Persian",
+                  "Slovak",
+                  "Swedish",
+                  "Croatian",
+                  "Filipino",
+                  "Hungarian",
+                  "Norwegian",
+                  "Slovenian",
+                  "Catalan",
+                  "Nynorsk",
+                  "Tamil",
+                  "Afrikaans",
+                  "auto"
+                ],
+                "example": "Chinese",
+                "type": "string"
+              },
+              "latex_read": {
+                "default": false,
+                "description": "Enable reading LaTeX formulas aloud (Chinese only). When true, language_boost may be forced to Chinese. Wrap formulas with $$ and escape backslashes. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "model": {
+                "description": "Supported MiniMax speech model for both voice clone and TTS in this request.",
+                "enum": [
+                  "speech-2.8-hd",
+                  "speech-2.8-turbo"
+                ],
+                "example": "speech-2.8-turbo",
+                "type": "string"
+              },
+              "modify_intensity": {
+                "description": "Voice effect intensity: lower is stronger, higher is softer. Range [-100, 100].",
+                "example": 0,
+                "maximum": 100,
+                "minimum": -100,
+                "type": "integer"
+              },
+              "modify_pitch": {
+                "description": "Voice effect pitch: lower is deeper, higher is brighter. Range [-100, 100]. Distinct from pitch (semitone).",
+                "example": 0,
+                "maximum": 100,
+                "minimum": -100,
+                "type": "integer"
+              },
+              "modify_timbre": {
+                "description": "Voice effect timbre: lower is thicker, higher is brighter or crisper. Range [-100, 100].",
+                "example": 0,
+                "maximum": 100,
+                "minimum": -100,
+                "type": "integer"
+              },
+              "need_noise_reduction": {
+                "default": false,
+                "description": "Whether to enable noise reduction on the clone reference audio. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "need_volume_normalization": {
+                "default": false,
+                "description": "Whether to enable volume normalization for cloning. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "pitch": {
+                "default": 0,
+                "description": "Pitch adjustment in semitones. Default 0. Range [-12, 12]. Distinct from modify_pitch (voice effect).",
+                "example": 0,
+                "maximum": 12,
+                "minimum": -12,
+                "type": "integer"
+              },
+              "prompt_audio": {
+                "description": "Optional short example audio URL to improve clone similarity and stability. Not a substitute for audio_url. Formats: mp3, m4a, wav. Duration must be under 8 seconds. File size ≤20 MB.",
+                "example": "https://example.com/short-sample.wav",
+                "maxLength": 2048,
+                "minLength": 1,
+                "type": "string"
+              },
+              "prompt_text": {
+                "description": "Optional transcript matching prompt_audio. Must align with the example audio content; end with punctuation. Not a substitute for text.",
+                "example": "Short sample content.",
+                "maxLength": 1000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "pronunciation_tone": {
+                "description": "Custom pronunciation rules. Use / as separator. For Mandarin entries, tones are digits 1-5 (5=neutral), e.g. name/(yan4)(shao3)(fei1). Example: [\"omg/oh my god\"].",
+                "example": [
+                  "omg/oh my god"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "sample_rate": {
+                "default": 32000,
+                "description": "Output sample rate in Hz. Default 32000.",
+                "enum": [
+                  8000,
+                  16000,
+                  22050,
+                  24000,
+                  32000,
+                  44100
+                ],
+                "example": 32000,
+                "type": "integer"
+              },
+              "sound_effects": {
+                "description": "Optional sound effect applied to the output. Supported for mp3, wav, and flac.",
+                "enum": [
+                  "spacious_echo",
+                  "auditorium_echo",
+                  "lofi_telephone",
+                  "robotic"
+                ],
+                "example": "spacious_echo",
+                "type": "string"
+              },
+              "speed": {
+                "default": 1,
+                "description": "Speech rate multiplier for synthesis. Default 1.0. Range [0.5, 2.0].",
+                "example": 1,
+                "maximum": 2,
+                "minimum": 0.5,
+                "type": "number"
+              },
+              "subtitle_enable": {
+                "default": false,
+                "description": "Whether to generate a subtitle download link. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "text": {
+                "description": "Text to synthesize with the temporarily cloned voice. Required. Fewer than 10,000 Unicode characters. On speech-2.8-hd / speech-2.8-turbo, may include paralinguistic tags such as (laughs), (breath), or (sighs).",
+                "example": "Welcome to Modellix speech synthesis.",
+                "maxLength": 9999,
+                "minLength": 1,
+                "type": "string"
+              },
+              "text_normalization": {
+                "default": false,
+                "description": "Enable Chinese/English text normalization for better number reading; may add slight latency. Default false.",
+                "example": false,
+                "type": "boolean"
+              },
+              "vol": {
+                "default": 1,
+                "description": "Speech volume for synthesis. Default 1.0. Range (0.0, 10.0].",
+                "example": 1,
+                "exclusiveMinimum": 0,
+                "maximum": 10,
+                "type": "number"
+              }
+            },
+            "required": [
+              "model",
+              "audio_url",
+              "text"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 0,
+              "data": {
+                "get_result": {
+                  "method": "GET",
+                  "url": "https://api.modellix.ai/api/v1/tasks/task-minimax-voice-clone-001"
+                },
+                "model_id": "minimax/minimax-voice-clone",
+                "status": "pending",
+                "task_id": "task-minimax-voice-clone-001"
+              },
+              "message": "success"
+            },
+            "schema": {
+              "description": "Response object for asynchronous task submission.",
+              "properties": {
+                "code": {
+                  "description": "Response code, 0 indicates success",
+                  "example": 0,
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "Task submission details. Poll GET /api/v1/tasks/{task_id} until status is success; audio appears in result.resources.",
+                  "properties": {
+                    "get_result": {
+                      "description": "Endpoint to query the task result. See Common API: Query Task Result.",
+                      "properties": {
+                        "method": {
+                          "example": "GET",
+                          "type": "string"
+                        },
+                        "url": {
+                          "example": "https://api.modellix.ai/api/v1/tasks/task-minimax-voice-clone-001",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "model_id": {
+                      "description": "Model ID in provider/model format",
+                      "example": "minimax/minimax-voice-clone",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Initial task status",
+                      "enum": [
+                        "pending",
+                        "processing"
+                      ],
+                      "example": "pending",
+                      "type": "string"
+                    },
+                    "task_id": {
+                      "description": "Unique task identifier for polling",
+                      "example": "task-minimax-voice-clone-001",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "task_id",
+                    "model_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "Response message",
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Task submitted successfully. Poll GET /api/v1/tasks/{task_id} until the task completes; synthesized audio is returned on the task result."
+      },
+      "400": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Invalid request parameters"
+      },
+      "401": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unauthorized - Invalid or missing API Key"
+      },
+      "429": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Rate limit exceeded"
+      },
+      "500": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: model is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Internal server error"
+      }
+    },
+    "summary": "MiniMax Voice Clone",
+    "x-mint": {
+      "href": "minimax/minimax-voice-clone"
+    }
+  }
+}

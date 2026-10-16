@@ -1,0 +1,144 @@
+{
+  "id": "e1027e9d-ca18-4ea9-9d96-8b02dc976307",
+  "revision": 0,
+  "last_node_id": 3,
+  "last_link_id": 1,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "ModellixGenerate",
+      "pos": [
+        620,
+        100
+      ],
+      "size": [
+        480,
+        712
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "images",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "video",
+          "shape": 6,
+          "type": "VIDEO",
+          "links": null
+        },
+        {
+          "name": "audio",
+          "shape": 6,
+          "type": "AUDIO",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "task_id",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixGenerate"
+      },
+      "widgets_values": [
+        "minimax/speech-2.8-turbo",
+        "{\"version\":1,\"values\":{\"text\":\"Welcome to Modellix. This is a synthetic voice sample for testing a media workflow. A small wooden sailboat floats quietly on the blue lake. Gentle waves move toward the shore as sunlight crosses the water. Thank you for listening to this example.\",\"voice_id\":\"English_expressive_narrator\",\"format\":\"wav\",\"sample_rate\":16000,\"channel\":1},\"branches\":{}}",
+        "64c85e9e77e48672269f032f50c5104ae30498c55dfd09c32c04d0fa739b2a4f",
+        "{\"version\":1,\"bindings\":[]}",
+        "example-v1-speech-2",
+        "initial",
+        "Wait",
+        "",
+        1800,
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "model_slug": "minimax/speech-2.8-turbo",
+        "parameters_json": "{\"version\":1,\"values\":{\"text\":\"Welcome to Modellix. This is a synthetic voice sample for testing a media workflow. A small wooden sailboat floats quietly on the blue lake. Gentle waves move toward the shore as sunlight crosses the water. Thank you for listening to this example.\",\"voice_id\":\"English_expressive_narrator\",\"format\":\"wav\",\"sample_rate\":16000,\"channel\":1},\"branches\":{}}",
+        "schema_hash": "64c85e9e77e48672269f032f50c5104ae30498c55dfd09c32c04d0fa739b2a4f",
+        "bindings_json": "{\"version\":1,\"bindings\":[]}",
+        "node_instance_id": "example-v1-speech-2",
+        "run_nonce": "initial",
+        "mode": "Wait",
+        "resume_task_id": "",
+        "timeout": 1800,
+        "modellix_status": "",
+        "modellix_form": ""
+      }
+    },
+    {
+      "id": 3,
+      "type": "PreviewAudio",
+      "pos": [
+        1180,
+        100
+      ],
+      "size": [
+        270,
+        88
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 1
+        },
+        {
+          "name": "audioUI",
+          "type": "AUDIO_UI",
+          "widget": {
+            "name": "audioUI"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      2,
+      3,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8,
+      "offset": [
+        20,
+        60
+      ]
+    }
+  },
+  "version": 0.4
+}

@@ -1,0 +1,43 @@
+{
+  "1": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "google/nano-banana-2-lite",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\", \"aspectRatio\": \"1:1\"}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": []}",
+      "node_instance_id": "example-v1-image-edit-1",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800
+    }
+  },
+  "2": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "google/nano-banana-2-lite-edit",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"Change the red hull of the boat to bright yellow; keep the lake and composition.\"}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": [{\"socket\": \"images.slot0\", \"pointer\": \"/image\"}]}",
+      "node_instance_id": "example-v1-image-edit-2",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800,
+      "images.slot0": [
+        "1",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ]
+    }
+  }
+}

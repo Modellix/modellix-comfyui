@@ -1,0 +1,281 @@
+{
+  "id": "c07e006a-df69-4d97-bda1-a6d959a93f1c",
+  "revision": 0,
+  "last_node_id": 3,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "ModellixGenerate",
+      "pos": [
+        60,
+        100
+      ],
+      "size": [
+        480,
+        712
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "images",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": [
+            1,
+            2
+          ]
+        },
+        {
+          "name": "video",
+          "shape": 6,
+          "type": "VIDEO",
+          "links": null
+        },
+        {
+          "name": "audio",
+          "shape": 6,
+          "type": "AUDIO",
+          "links": null
+        },
+        {
+          "name": "task_id",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixGenerate"
+      },
+      "widgets_values": [
+        "google/nano-banana-2-lite",
+        "{\"version\":1,\"values\":{\"prompt\":\"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\",\"aspectRatio\":\"1:1\"},\"branches\":{}}",
+        "566f367b2df5440721a639828fb1824131420e6261470a4f3f2b5f60ba7752c3",
+        "{\"version\":1,\"bindings\":[]}",
+        "example-v1-first-last-video-1",
+        "initial",
+        "Wait",
+        "",
+        1800,
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "model_slug": "google/nano-banana-2-lite",
+        "parameters_json": "{\"version\":1,\"values\":{\"prompt\":\"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\",\"aspectRatio\":\"1:1\"},\"branches\":{}}",
+        "schema_hash": "566f367b2df5440721a639828fb1824131420e6261470a4f3f2b5f60ba7752c3",
+        "bindings_json": "{\"version\":1,\"bindings\":[]}",
+        "node_instance_id": "example-v1-first-last-video-1",
+        "run_nonce": "initial",
+        "mode": "Wait",
+        "resume_task_id": "",
+        "timeout": 1800,
+        "modellix_status": "",
+        "modellix_form": ""
+      }
+    },
+    {
+      "id": 2,
+      "type": "ModellixGenerate",
+      "pos": [
+        620,
+        100
+      ],
+      "size": [
+        480,
+        752
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "/first_frame_image",
+          "name": "images.slot0",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "label": "/last_frame_image",
+          "name": "images.slot1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "video",
+          "shape": 6,
+          "type": "VIDEO",
+          "links": [
+            3
+          ]
+        },
+        {
+          "name": "audio",
+          "shape": 6,
+          "type": "AUDIO",
+          "links": null
+        },
+        {
+          "name": "task_id",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixGenerate"
+      },
+      "widgets_values": [
+        "bytedance/seedance-2.0-mini-i2v",
+        "{\"version\":1,\"values\":{\"prompt\":\"The toy sailboat gently rocks on the water. Camera stays fixed.\",\"duration\":4,\"resolution\":\"480p\",\"ratio\":\"1:1\",\"generate_audio\":false},\"branches\":{}}",
+        "32f4466154466439f7edecf4b20689fb454ed8516f2236ba8c08d353d84cc379",
+        "{\"version\":1,\"bindings\":[{\"socket\":\"images.slot0\",\"pointer\":\"/first_frame_image\"},{\"socket\":\"images.slot1\",\"pointer\":\"/last_frame_image\"}]}",
+        "example-v1-first-last-video-2",
+        "initial",
+        "Wait",
+        "",
+        1800,
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "model_slug": "bytedance/seedance-2.0-mini-i2v",
+        "parameters_json": "{\"version\":1,\"values\":{\"prompt\":\"The toy sailboat gently rocks on the water. Camera stays fixed.\",\"duration\":4,\"resolution\":\"480p\",\"ratio\":\"1:1\",\"generate_audio\":false},\"branches\":{}}",
+        "schema_hash": "32f4466154466439f7edecf4b20689fb454ed8516f2236ba8c08d353d84cc379",
+        "bindings_json": "{\"version\":1,\"bindings\":[{\"socket\":\"images.slot0\",\"pointer\":\"/first_frame_image\"},{\"socket\":\"images.slot1\",\"pointer\":\"/last_frame_image\"}]}",
+        "node_instance_id": "example-v1-first-last-video-2",
+        "run_nonce": "initial",
+        "mode": "Wait",
+        "resume_task_id": "",
+        "timeout": 1800,
+        "modellix_status": "",
+        "modellix_form": ""
+      }
+    },
+    {
+      "id": 3,
+      "type": "SaveVideo",
+      "pos": [
+        1180,
+        100
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 3
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        },
+        {
+          "name": "format",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "format"
+          },
+          "link": null
+        },
+        {
+          "name": "format.codec",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "format.codec"
+          },
+          "link": null
+        },
+        {
+          "name": "codec",
+          "shape": 7,
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "codec"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": null
+        }
+      ],
+      "properties": {},
+      "widgets_values": [
+        "modellix-acceptance/video",
+        "auto",
+        "auto",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "modellix-acceptance/video",
+        "format": "auto",
+        "format.codec": "auto",
+        "codec": "auto"
+      }
+    }
+  ],
+  "links": [
+    [
+      3,
+      2,
+      1,
+      3,
+      0,
+      "VIDEO"
+    ],
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      1,
+      0,
+      2,
+      1,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8,
+      "offset": [
+        20,
+        60
+      ]
+    }
+  },
+  "version": 0.4
+}

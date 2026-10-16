@@ -1,0 +1,50 @@
+{
+  "1": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "google/nano-banana-2-lite",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\", \"aspectRatio\": \"1:1\"}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": []}",
+      "node_instance_id": "example-v1-first-last-video-1",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800
+    }
+  },
+  "2": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "bytedance/seedance-2.0-mini-i2v",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"The toy sailboat gently rocks on the water. Camera stays fixed.\", \"duration\": 4, \"resolution\": \"480p\", \"ratio\": \"1:1\", \"generate_audio\": false}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": [{\"socket\": \"images.slot0\", \"pointer\": \"/first_frame_image\"}, {\"socket\": \"images.slot1\", \"pointer\": \"/last_frame_image\"}]}",
+      "node_instance_id": "example-v1-first-last-video-2",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800,
+      "images.slot0": [
+        "1",
+        0
+      ],
+      "images.slot1": [
+        "1",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "2",
+        1
+      ],
+      "filename_prefix": "modellix-acceptance/video",
+      "format": "auto",
+      "codec": "auto"
+    }
+  }
+}

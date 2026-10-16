@@ -1,0 +1,28 @@
+{
+  "2": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "bytedance/seedance-2.0-mini-t2v",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"A small red toy sailboat on a calm lake, gentle ripples, no people or text.\", \"duration\": 4, \"resolution\": \"480p\", \"ratio\": \"1:1\", \"generate_audio\": false}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": []}",
+      "node_instance_id": "example-v1-text-video-2",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800
+    }
+  },
+  "3": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "2",
+        1
+      ],
+      "filename_prefix": "modellix-acceptance/video",
+      "format": "auto",
+      "codec": "auto"
+    }
+  }
+}

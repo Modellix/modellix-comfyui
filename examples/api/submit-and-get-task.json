@@ -1,0 +1,36 @@
+{
+  "1": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "google/nano-banana-2-lite",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\", \"aspectRatio\": \"1:1\"}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": []}",
+      "node_instance_id": "example-v1-submit-and-get-task-1",
+      "run_nonce": "initial",
+      "mode": "Submit only",
+      "resume_task_id": "",
+      "timeout": 1800
+    }
+  },
+  "2": {
+    "class_type": "ModellixGetTask",
+    "inputs": {
+      "task_id": [
+        "1",
+        3
+      ],
+      "mode": "Wait",
+      "timeout": 1800
+    }
+  },
+  "3": {
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ]
+    }
+  }
+}

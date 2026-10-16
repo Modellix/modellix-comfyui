@@ -1,0 +1,395 @@
+{
+  "id": "735fe1a0-9ae0-4a63-9f4d-4cbf9c283a2d",
+  "revision": 0,
+  "last_node_id": 5,
+  "last_link_id": 4,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "ModellixGenerate",
+      "pos": [
+        60,
+        100
+      ],
+      "size": [
+        480,
+        712
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "images",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "video",
+          "shape": 6,
+          "type": "VIDEO",
+          "links": null
+        },
+        {
+          "name": "audio",
+          "shape": 6,
+          "type": "AUDIO",
+          "links": null
+        },
+        {
+          "name": "task_id",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixGenerate"
+      },
+      "widgets_values": [
+        "google/nano-banana-2-lite",
+        "{\"version\":1,\"values\":{\"prompt\":\"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\",\"aspectRatio\":\"1:1\"},\"branches\":{}}",
+        "566f367b2df5440721a639828fb1824131420e6261470a4f3f2b5f60ba7752c3",
+        "{\"version\":1,\"bindings\":[]}",
+        "example-v1-upload-url-list-1",
+        "initial",
+        "Wait",
+        "",
+        1800,
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "model_slug": "google/nano-banana-2-lite",
+        "parameters_json": "{\"version\":1,\"values\":{\"prompt\":\"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\",\"aspectRatio\":\"1:1\"},\"branches\":{}}",
+        "schema_hash": "566f367b2df5440721a639828fb1824131420e6261470a4f3f2b5f60ba7752c3",
+        "bindings_json": "{\"version\":1,\"bindings\":[]}",
+        "node_instance_id": "example-v1-upload-url-list-1",
+        "run_nonce": "initial",
+        "mode": "Wait",
+        "resume_task_id": "",
+        "timeout": 1800,
+        "modellix_status": "",
+        "modellix_form": ""
+      }
+    },
+    {
+      "id": 2,
+      "type": "ModellixUploadMedia",
+      "pos": [
+        620,
+        100
+      ],
+      "size": [
+        480,
+        350
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "video",
+          "shape": 7,
+          "type": "VIDEO",
+          "link": null
+        },
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        },
+        {
+          "name": "order",
+          "type": "COMBO",
+          "widget": {
+            "name": "order"
+          },
+          "link": null
+        },
+        {
+          "name": "run_nonce",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "run_nonce"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "urls",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "url_list",
+          "type": "MODELLIX_URL_LIST",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "file_ids",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "media_types",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixUploadMedia"
+      },
+      "widgets_values": [
+        "IMAGE,VIDEO,AUDIO",
+        "initial",
+        ""
+      ],
+      "widgets_values_named": {
+        "order": "IMAGE,VIDEO,AUDIO",
+        "run_nonce": "initial",
+        "modellix_status": ""
+      }
+    },
+    {
+      "id": 3,
+      "type": "ModellixURLList",
+      "pos": [
+        1180,
+        100
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "existing",
+          "shape": 7,
+          "type": "MODELLIX_URL_LIST",
+          "link": 2
+        },
+        {
+          "name": "additional",
+          "shape": 7,
+          "type": "MODELLIX_URL_LIST",
+          "link": null
+        },
+        {
+          "name": "urls",
+          "type": "STRING",
+          "widget": {
+            "name": "urls"
+          },
+          "link": null
+        },
+        {
+          "name": "order",
+          "type": "COMBO",
+          "widget": {
+            "name": "order"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "url_list",
+          "type": "MODELLIX_URL_LIST",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixURLList"
+      },
+      "widgets_values": [
+        "",
+        "Append"
+      ],
+      "widgets_values_named": {
+        "urls": "",
+        "order": "Append"
+      }
+    },
+    {
+      "id": 4,
+      "type": "ModellixGenerate",
+      "pos": [
+        1740,
+        100
+      ],
+      "size": [
+        480,
+        752
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "/image",
+          "name": "url_lists.slot0",
+          "shape": 7,
+          "type": "MODELLIX_URL_LIST",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": [
+            4
+          ]
+        },
+        {
+          "name": "video",
+          "shape": 6,
+          "type": "VIDEO",
+          "links": null
+        },
+        {
+          "name": "audio",
+          "shape": 6,
+          "type": "AUDIO",
+          "links": null
+        },
+        {
+          "name": "task_id",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModellixGenerate"
+      },
+      "widgets_values": [
+        "google/nano-banana-2-lite-edit",
+        "{\"version\":1,\"values\":{\"prompt\":\"Make the sky a soft sunset pink, retaining the toy sailboat.\"},\"branches\":{}}",
+        "6cfeea234321677762b57772c8e3d8bd57e28d778dcb2d1937bc76de824e00b0",
+        "{\"version\":1,\"bindings\":[{\"socket\":\"url_lists.slot0\",\"pointer\":\"/image\"}]}",
+        "example-v1-upload-url-list-4",
+        "initial",
+        "Wait",
+        "",
+        1800,
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "model_slug": "google/nano-banana-2-lite-edit",
+        "parameters_json": "{\"version\":1,\"values\":{\"prompt\":\"Make the sky a soft sunset pink, retaining the toy sailboat.\"},\"branches\":{}}",
+        "schema_hash": "6cfeea234321677762b57772c8e3d8bd57e28d778dcb2d1937bc76de824e00b0",
+        "bindings_json": "{\"version\":1,\"bindings\":[{\"socket\":\"url_lists.slot0\",\"pointer\":\"/image\"}]}",
+        "node_instance_id": "example-v1-upload-url-list-4",
+        "run_nonce": "initial",
+        "mode": "Wait",
+        "resume_task_id": "",
+        "timeout": 1800,
+        "modellix_status": "",
+        "modellix_form": ""
+      }
+    },
+    {
+      "id": 5,
+      "type": "PreviewImage",
+      "pos": [
+        2300,
+        100
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      2,
+      1,
+      3,
+      0,
+      "MODELLIX_URL_LIST"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "MODELLIX_URL_LIST"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8,
+      "offset": [
+        20,
+        60
+      ]
+    }
+  },
+  "version": 0.4
+}

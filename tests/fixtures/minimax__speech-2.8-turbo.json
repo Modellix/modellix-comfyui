@@ -1,0 +1,515 @@
+{
+  "servers": [
+    {
+      "url": "https://api.modellix.ai/api/v1/minimax/speech-2.8-turbo"
+    }
+  ],
+  "post": {
+    "description": "[Core Function] MiniMax Speech 2.8 Turbo is a lower-latency text-to-speech model with the same control surface as Speech 2.8 HD, including paralinguistic tags such as (laughs). [Strengths] Faster and more cost-efficient synthesis while retaining prosody, timbre mix, pronunciation, subtitle, and audio-format controls. [Best For] Highly recommended for: interactive assistants, high-volume TTS batches, cost-sensitive voiceovers, quick narration drafts, and latency-sensitive product prompts. [Limitations] Do NOT use this for streaming or real-time partial audio. Do NOT request hex output or emotion whisper. Do NOT send both voice_id and timbre_weights. Prefer speech-2.8-hd if maximum audio quality is required. Audio URLs expire in about 24 hours. [Routing] Choose speech-2.8-turbo when the user emphasizes speed, cost, or throughput. Choose speech-2.8-hd for premium quality or highly expressive delivery.",
+    "operationId": "minimaxSpeech28Turbo",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "examples": {
+            "basic": {
+              "summary": "Minimal single-voice synthesis",
+              "value": {
+                "text": "Hello, this is MiniMax speech synthesis.",
+                "voice_id": "English_radiant_girl"
+              }
+            },
+            "with_controls": {
+              "summary": "Prosody and format for interactive TTS",
+              "value": {
+                "format": "mp3",
+                "language_boost": "English",
+                "sample_rate": 32000,
+                "speed": 1.1,
+                "text": "How is the weather today?",
+                "voice_id": "English_radiant_girl"
+              }
+            }
+          },
+          "schema": {
+            "description": "text is always required. Exactly one of voice_id or timbre_weights is required (mutually exclusive). stream, stream_options, and output_format are not accepted.",
+            "oneOf": [
+              {
+                "description": "Single-voice synthesis: provide voice_id; do not provide timbre_weights.",
+                "required": [
+                  "voice_id"
+                ],
+                "title": "single_voice"
+              },
+              {
+                "description": "Mixed-voice synthesis: provide timbre_weights; do not provide voice_id.",
+                "required": [
+                  "timbre_weights"
+                ],
+                "title": "timbre_mix"
+              }
+            ],
+            "properties": {
+              "bitrate": {
+                "default": 128000,
+                "description": "Audio bitrate. Applies to mp3 only.",
+                "enum": [
+                  32000,
+                  64000,
+                  128000,
+                  256000
+                ],
+                "example": 128000,
+                "type": "integer"
+              },
+              "channel": {
+                "default": 1,
+                "description": "Number of channels. 1 is mono, 2 is stereo.",
+                "enum": [
+                  1,
+                  2
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "emotion": {
+                "description": "Optional emotion control. Leave unset to let the model choose naturally. whisper is not supported on speech-2.8-hd or speech-2.8-turbo.",
+                "enum": [
+                  "happy",
+                  "sad",
+                  "angry",
+                  "fearful",
+                  "disgusted",
+                  "surprised",
+                  "calm",
+                  "fluent"
+                ],
+                "example": "calm",
+                "type": "string"
+              },
+              "force_cbr": {
+                "default": false,
+                "description": "Force constant bitrate encoding. Optional; typically unused for standard async synthesis.",
+                "example": false,
+                "type": "boolean"
+              },
+              "format": {
+                "default": "mp3",
+                "description": "Output audio format. pcmu_raw and pcmu_wav are G.711 mu-law (8 kHz).",
+                "enum": [
+                  "mp3",
+                  "pcm",
+                  "flac",
+                  "wav",
+                  "pcmu_raw",
+                  "pcmu_wav",
+                  "opus"
+                ],
+                "example": "mp3",
+                "type": "string"
+              },
+              "language_boost": {
+                "description": "Boost recognition for a language or dialect. Use auto when the language is unknown.",
+                "enum": [
+                  "Chinese",
+                  "Chinese,Yue",
+                  "English",
+                  "Arabic",
+                  "Russian",
+                  "Spanish",
+                  "French",
+                  "Portuguese",
+                  "German",
+                  "Turkish",
+                  "Dutch",
+                  "Ukrainian",
+                  "Vietnamese",
+                  "Indonesian",
+                  "Japanese",
+                  "Italian",
+                  "Korean",
+                  "Thai",
+                  "Polish",
+                  "Romanian",
+                  "Greek",
+                  "Czech",
+                  "Finnish",
+                  "Hindi",
+                  "Bulgarian",
+                  "Danish",
+                  "Hebrew",
+                  "Malay",
+                  "Persian",
+                  "Slovak",
+                  "Swedish",
+                  "Croatian",
+                  "Filipino",
+                  "Hungarian",
+                  "Norwegian",
+                  "Slovenian",
+                  "Catalan",
+                  "Nynorsk",
+                  "Tamil",
+                  "Afrikaans",
+                  "auto"
+                ],
+                "example": "English",
+                "type": "string"
+              },
+              "latex_read": {
+                "default": false,
+                "description": "Enable LaTeX formula reading (Chinese). When enabled, language_boost may be forced to Chinese. Wrap formulas with $$.",
+                "example": false,
+                "type": "boolean"
+              },
+              "modify_intensity": {
+                "description": "Voice effect: stronger (negative) to softer (positive).",
+                "example": 0,
+                "maximum": 100,
+                "minimum": -100,
+                "type": "integer"
+              },
+              "modify_pitch": {
+                "description": "Voice effect: deepen (negative) to brighten (positive). Distinct from pitch (semitone).",
+                "example": 0,
+                "maximum": 100,
+                "minimum": -100,
+                "type": "integer"
+              },
+              "modify_timbre": {
+                "description": "Voice effect: fuller (negative) to crisper (positive).",
+                "example": 0,
+                "maximum": 100,
+                "minimum": -100,
+                "type": "integer"
+              },
+              "pitch": {
+                "default": 0,
+                "description": "Pitch adjustment in semitones. Distinct from modify_pitch (voice effect slider).",
+                "example": 0,
+                "maximum": 12,
+                "minimum": -12,
+                "type": "integer"
+              },
+              "pronunciation_tone": {
+                "description": "Custom pronunciation rules in original/replacement form, for example omg/oh my god or Chinese pinyin with tone numbers.",
+                "example": [
+                  "omg/oh my god"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "sample_rate": {
+                "default": 32000,
+                "description": "Output sample rate in Hz.",
+                "enum": [
+                  8000,
+                  16000,
+                  22050,
+                  24000,
+                  32000,
+                  44100
+                ],
+                "example": 32000,
+                "type": "integer"
+              },
+              "sound_effects": {
+                "description": "Optional single sound effect applied to the output.",
+                "enum": [
+                  "spacious_echo",
+                  "auditorium_echo",
+                  "lofi_telephone",
+                  "robotic"
+                ],
+                "example": "spacious_echo",
+                "type": "string"
+              },
+              "speed": {
+                "default": 1,
+                "description": "Speech rate multiplier. Higher is faster.",
+                "example": 1,
+                "maximum": 2,
+                "minimum": 0.5,
+                "type": "number"
+              },
+              "subtitle_enable": {
+                "default": false,
+                "description": "Whether to generate a subtitle file download link.",
+                "example": false,
+                "type": "boolean"
+              },
+              "subtitle_type": {
+                "default": "sentence",
+                "description": "Subtitle granularity. word_streaming is not supported.",
+                "enum": [
+                  "sentence",
+                  "word"
+                ],
+                "example": "sentence",
+                "type": "string"
+              },
+              "text": {
+                "description": "Text to synthesize (fewer than 10000 characters). Supports pause markers such as <#0.5#>, inline pronunciation in parentheses, and paralinguistic tags such as (laughs) or (sighs).",
+                "example": "Hello, this is MiniMax speech synthesis.",
+                "maxLength": 9999,
+                "minLength": 1,
+                "type": "string"
+              },
+              "text_normalization": {
+                "default": false,
+                "description": "Enable Chinese/English text normalization for better number reading; may add slight latency.",
+                "example": false,
+                "type": "boolean"
+              },
+              "timbre_weights": {
+                "description": "Required when not using voice_id (exactly one of voice_id or timbre_weights). Mix up to 4 voices by weight. Mutually exclusive with top-level voice_id.",
+                "items": {
+                  "properties": {
+                    "voice_id": {
+                      "description": "Voice ID for one entry in a timbre mix. Distinct from the top-level single-voice voice_id field. May be a system voice from the official catalog (https://platform.minimax.io/docs/faq/system-voice-id) or a cloned/AI voice ID.",
+                      "example": "female-chengshu",
+                      "maxLength": 256,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "weight": {
+                      "description": "Relative mix weight for this voice. Higher values increase similarity to this voice. At most 4 voices.",
+                      "example": 30,
+                      "maximum": 100,
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "voice_id",
+                    "weight"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 4,
+                "minItems": 1,
+                "type": "array"
+              },
+              "voice_id": {
+                "description": "Required when not using timbre_weights (exactly one of voice_id or timbre_weights). Accepts a system, cloned, or AI-generated voice ID. Mutually exclusive with timbre_weights. Full official system voice catalog: https://platform.minimax.io/docs/faq/system-voice-id . Sample system voices (not exhaustive): English_expressive_narrator, English_radiant_girl, English_magnetic_voiced_man, Chinese (Mandarin)_News_Anchor, Chinese (Mandarin)_Lyrical_Voice, Chinese (Mandarin)_Reliable_Executive.",
+                "example": "English_expressive_narrator",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-systemVoiceIds": [
+                  "English_expressive_narrator",
+                  "English_radiant_girl",
+                  "English_magnetic_voiced_man",
+                  "Chinese (Mandarin)_News_Anchor",
+                  "Chinese (Mandarin)_Lyrical_Voice",
+                  "Chinese (Mandarin)_Reliable_Executive"
+                ]
+              },
+              "vol": {
+                "default": 1,
+                "description": "Speech volume. Range (0, 10].",
+                "example": 1,
+                "exclusiveMinimum": 0,
+                "maximum": 10,
+                "type": "number"
+              }
+            },
+            "required": [
+              "text"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 0,
+              "data": {
+                "get_result": {
+                  "method": "GET",
+                  "url": "https://api.modellix.ai/api/v1/tasks/task-speech-28-turbo-001"
+                },
+                "model_id": "minimax/speech-2.8-turbo",
+                "status": "pending",
+                "task_id": "task-speech-28-turbo-001"
+              },
+              "message": "success"
+            },
+            "schema": {
+              "description": "Response object for asynchronous task submission.",
+              "properties": {
+                "code": {
+                  "description": "Response code, 0 indicates success",
+                  "example": 0,
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "Task submission details. Poll GET /api/v1/tasks/{task_id} until status is success; audio appears in result.resources.",
+                  "properties": {
+                    "get_result": {
+                      "description": "Endpoint to query the task result. See Common API: Query Task Result.",
+                      "properties": {
+                        "method": {
+                          "example": "GET",
+                          "type": "string"
+                        },
+                        "url": {
+                          "example": "https://api.modellix.ai/api/v1/tasks/task-speech-28-hd-001",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "model_id": {
+                      "description": "Model ID in provider/model format",
+                      "example": "minimax/speech-2.8-hd",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Initial task status",
+                      "enum": [
+                        "pending",
+                        "processing"
+                      ],
+                      "example": "pending",
+                      "type": "string"
+                    },
+                    "task_id": {
+                      "description": "Unique task identifier for polling",
+                      "example": "task-speech-28-hd-001",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "task_id",
+                    "model_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "Response message",
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Task submitted successfully. Poll GET /api/v1/tasks/{task_id} until the task completes; synthesized audio is returned on the task result."
+      },
+      "400": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: voice_id or timbre_weights is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Invalid request parameters"
+      },
+      "401": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: voice_id or timbre_weights is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Missing or invalid API key"
+      },
+      "429": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: voice_id or timbre_weights is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Rate limit exceeded"
+      },
+      "500": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": 400,
+                  "type": "integer"
+                },
+                "message": {
+                  "example": "Invalid parameters: voice_id or timbre_weights is required",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Internal server error"
+      }
+    },
+    "summary": "Speech 2.8 Turbo",
+    "x-mint": {
+      "href": "minimax/speech-2-8-turbo"
+    }
+  }
+}

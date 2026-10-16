@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modellix-comfyui"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Modellix media generation custom nodes for ComfyUI"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,7 +18,7 @@ dev = ["build>=1.2,<2", "pytest>=8,<9", "pytest-asyncio>=0.24,<1", "ruff>=0.9,<1
 
 [project.urls]
 Homepage = "https://www.modellix.ai"
-Documentation = "https://docs.modellix.ai/ways-to-use/api"
+Documentation = "https://docs.modellix.ai/ways-to-use/comfyui"
 Repository = "https://github.com/Modellix/modellix-comfyui"
 Issues = "https://github.com/Modellix/modellix-comfyui/issues"
 
@@ -34,7 +34,6 @@ namespaces = false
 PublisherId = "modellix"
 DisplayName = "Modellix"
 requires-comfyui = ">=0.40.0"
-# Set a Registry-compatible release version after implementation and acceptance.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

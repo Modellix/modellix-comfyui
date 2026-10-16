@@ -1,0 +1,367 @@
+{
+  "servers": [
+    {
+      "url": "https://api.modellix.ai/api/v1/bytedance/seedance-2.0-mini-i2v"
+    }
+  ],
+  "post": {
+    "description": "[Core Function] Seedance 2.0 Mini I2V is the lightweight multimodal image-to-video variant. [Strengths] Supports 480p/720p, 24 fps, 4-15s MP4 output, with optional first/last frame, reference images, and audio references. [Routing] Use for cost-efficient image-to-video.",
+    "operationId": "seedance20MiniI2vAsync",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "examples": {
+            "frame_mode": {
+              "description": "Seedance 2.0 first-frame may use adaptive or a fixed ratio. Duration is 4-15.",
+              "summary": "Frame mode — first frame",
+              "value": {
+                "duration": 5,
+                "first_frame_image": "https://example.com/first.jpg",
+                "prompt": "The person smiles and waves at the camera",
+                "ratio": "adaptive",
+                "resolution": "720p"
+              }
+            },
+            "frame_mode_start_end": {
+              "description": "Seedance 2.0 first-and-last-frame may use adaptive or a fixed ratio. Duration is 4-15.",
+              "summary": "Frame mode — first and last frame",
+              "value": {
+                "duration": 10,
+                "first_frame_image": "https://example.com/first.jpg",
+                "last_frame_image": "https://example.com/last.jpg",
+                "prompt": "Smooth transition from the first frame to the last frame",
+                "ratio": "adaptive",
+                "resolution": "720p"
+              }
+            },
+            "reference_mode": {
+              "description": "Reference-to-video may use a fixed ratio or adaptive. Duration is 4-15.",
+              "summary": "Reference mode — images + audio",
+              "value": {
+                "audio_urls": [
+                  "https://example.com/ref.mp3"
+                ],
+                "duration": 8,
+                "prompt": "Motion follows [Audio 1], style from [Image 1]",
+                "ratio": "16:9",
+                "reference_images": [
+                  "https://example.com/ref.jpg"
+                ],
+                "resolution": "720p"
+              }
+            }
+          },
+          "schema": {
+            "description": "Seedance 2.0 Mini image-to-video. Same options as Fast 2.0 I2V; `resolution` is limited to 480p/720p. **Note:** images containing real human faces are not supported per [BytePlus Seedance 2.0 API](https://docs.byteplus.com/en/docs/ModelArk/1520757).",
+            "oneOf": [
+              {
+                "description": "First-frame or first-to-last-frame animation.",
+                "properties": {
+                  "audio_urls": {
+                    "description": "Optional. Up to 3 reference audio URLs. Use `[Audio n]` placeholders in prompt.",
+                    "items": {
+                      "description": "Audio URL.",
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "camera_fixed": {
+                    "default": false,
+                    "description": "Whether to keep the camera fixed during generation.",
+                    "type": "boolean"
+                  },
+                  "duration": {
+                    "default": 5,
+                    "description": "Video duration in seconds (4-15 seconds).",
+                    "enum": [
+                      4,
+                      5,
+                      6,
+                      7,
+                      8,
+                      9,
+                      10,
+                      11,
+                      12,
+                      13,
+                      14,
+                      15
+                    ],
+                    "type": "integer"
+                  },
+                  "execution_expires_after": {
+                    "default": 172800,
+                    "description": "Task expiration time in seconds.",
+                    "maximum": 259200,
+                    "minimum": 3600,
+                    "type": "integer"
+                  },
+                  "first_frame_image": {
+                    "description": "Required. Starting frame. Supports an HTTPS URL, Base64, or `asset://<asset_id>`. The asset ID is returned by [Register Provider Asset](/api/register-provider-asset).",
+                    "example": "https://example.com/first.jpg",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "generate_audio": {
+                    "default": true,
+                    "description": "Whether to generate audio.",
+                    "type": "boolean"
+                  },
+                  "last_frame_image": {
+                    "description": "Optional. Ending frame. Requires `first_frame_image`. Supports an HTTPS URL, Base64, or `asset://<asset_id>`. The asset ID is returned by [Register Provider Asset](/api/register-provider-asset).",
+                    "example": "https://example.com/last.jpg",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "description": "Optional. Video description. Maximum 10000 characters. Recommended prompt length: under 1000 words. Frame animation description.",
+                    "example": "The person smiles and waves at the camera",
+                    "maxLength": 10000,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ratio": {
+                    "default": "adaptive",
+                    "description": "Aspect ratio of the generated video.",
+                    "enum": [
+                      "16:9",
+                      "4:3",
+                      "1:1",
+                      "3:4",
+                      "9:16",
+                      "21:9",
+                      "adaptive"
+                    ],
+                    "type": "string"
+                  },
+                  "resolution": {
+                    "default": "720p",
+                    "description": "Output resolution of the video.",
+                    "enum": [
+                      "480p",
+                      "720p"
+                    ],
+                    "type": "string"
+                  },
+                  "return_last_frame": {
+                    "default": false,
+                    "description": "Whether to return the last frame of the generated video.",
+                    "type": "boolean"
+                  },
+                  "seed": {
+                    "default": -1,
+                    "description": "Random seed for reproducible generation. Use -1 for random.",
+                    "maximum": 4294967295,
+                    "minimum": -1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "first_frame_image"
+                ],
+                "title": "Option 1 — Frame mode",
+                "type": "object"
+              },
+              {
+                "description": "Multimodal reference images with optional audio.",
+                "properties": {
+                  "audio_urls": {
+                    "description": "Optional. Up to 3 reference audio URLs. Use `[Audio n]` placeholders in prompt.",
+                    "items": {
+                      "description": "Audio URL.",
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "camera_fixed": {
+                    "default": false,
+                    "description": "Whether to keep the camera fixed during generation.",
+                    "type": "boolean"
+                  },
+                  "duration": {
+                    "default": 5,
+                    "description": "Video duration in seconds (4-15 seconds).",
+                    "enum": [
+                      4,
+                      5,
+                      6,
+                      7,
+                      8,
+                      9,
+                      10,
+                      11,
+                      12,
+                      13,
+                      14,
+                      15
+                    ],
+                    "type": "integer"
+                  },
+                  "execution_expires_after": {
+                    "default": 172800,
+                    "description": "Task expiration time in seconds.",
+                    "maximum": 259200,
+                    "minimum": 3600,
+                    "type": "integer"
+                  },
+                  "generate_audio": {
+                    "default": true,
+                    "description": "Whether to generate audio.",
+                    "type": "boolean"
+                  },
+                  "prompt": {
+                    "description": "Optional. Video description. Maximum 10000 characters. Recommended prompt length: under 1000 words. Use `[Image n]` and `[Audio n]` when referencing inputs.",
+                    "example": "The person smiles and waves at the camera",
+                    "maxLength": 10000,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ratio": {
+                    "default": "adaptive",
+                    "description": "Aspect ratio of the generated video.",
+                    "enum": [
+                      "16:9",
+                      "4:3",
+                      "1:1",
+                      "3:4",
+                      "9:16",
+                      "21:9",
+                      "adaptive"
+                    ],
+                    "type": "string"
+                  },
+                  "reference_images": {
+                    "description": "Required. 1–9 reference images. Use `[Image n]` placeholders in prompt. Supports an HTTPS URL, Base64, or `asset://<asset_id>`. The asset ID is returned by [Register Provider Asset](/api/register-provider-asset).",
+                    "example": [
+                      "https://example.com/ref.jpg"
+                    ],
+                    "items": {
+                      "description": "HTTPS URL, Base64, or `asset://<asset_id>`.",
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 9,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "resolution": {
+                    "default": "720p",
+                    "description": "Output resolution of the video.",
+                    "enum": [
+                      "480p",
+                      "720p"
+                    ],
+                    "type": "string"
+                  },
+                  "return_last_frame": {
+                    "default": false,
+                    "description": "Whether to return the last frame of the generated video.",
+                    "type": "boolean"
+                  },
+                  "seed": {
+                    "default": -1,
+                    "description": "Random seed for reproducible generation. Use -1 for random.",
+                    "maximum": 4294967295,
+                    "minimum": -1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "reference_images"
+                ],
+                "title": "Option 2 — Reference mode",
+                "type": "object"
+              }
+            ]
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Response code, 0 indicates success",
+                  "example": 0,
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "Detailed data about the submitted asynchronous task.",
+                  "properties": {
+                    "get_result": {
+                      "description": "API information to query the task result",
+                      "properties": {
+                        "method": {
+                          "description": "HTTP method",
+                          "example": "GET",
+                          "type": "string"
+                        },
+                        "url": {
+                          "description": "Full URL to query the task result",
+                          "example": "https://api.modellix.ai/api/v1/tasks/task-abc123",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "model_id": {
+                      "description": "Model ID",
+                      "example": "model-123",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Task status",
+                      "enum": [
+                        "pending",
+                        "processing"
+                      ],
+                      "example": "pending",
+                      "type": "string"
+                    },
+                    "task_id": {
+                      "description": "Unique task identifier",
+                      "example": "task-abc123",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "task_id",
+                    "model_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "Response message",
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Task submitted successfully"
+      }
+    },
+    "summary": "Seedance 2.0 Mini I2V",
+    "x-mint": {
+      "href": "bytedance/seedance-2-0-mini-i2v"
+    }
+  }
+}

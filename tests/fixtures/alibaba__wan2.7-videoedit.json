@@ -1,0 +1,241 @@
+{
+  "servers": [
+    {
+      "url": "https://api.modellix.ai/api/v1/alibaba/wan2.7-videoedit"
+    }
+  ],
+  "post": {
+    "description": "[Core Function] Wan 2.7 Video Editing is an instruction-based video modification model. [Strengths] It supports complex video editing tasks like content replacement using reference images, and replicating actions, effects, and camera movements. [Best For] Highly recommended for: modifying existing video footage, style transfer on videos, and targeted element replacement. [Limitations] Do NOT use this model to generate a brand new video from scratch; it requires an input video. [Routing] Use this model by default whenever a user wants to edit, alter, or restyle an existing video.",
+    "operationId": "wan27VideoEditAsync",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "examples": {
+            "advanced": {
+              "summary": "Advanced editing with multiple reference images",
+              "value": {
+                "audio_setting": "origin",
+                "duration": 5,
+                "negative_prompt": "blurry, low quality",
+                "prompt": "Transform the scene with reference styles",
+                "ratio": "9:16",
+                "reference_images": [
+                  "https://example.com/style1.jpg",
+                  "https://example.com/style2.jpg",
+                  "https://example.com/style3.jpg"
+                ],
+                "resolution": "1080P",
+                "seed": 123456,
+                "video_url": "https://example.com/video.mp4"
+              }
+            },
+            "style_transfer": {
+              "summary": "Video style modification",
+              "value": {
+                "prompt": "Transform the entire scene into clay style",
+                "prompt_extend": true,
+                "resolution": "720P",
+                "video_url": "https://example.com/input.mp4"
+              }
+            },
+            "video_edit": {
+              "summary": "Video editing with reference image",
+              "value": {
+                "prompt": "Replace the girl's clothes with the clothes in the image",
+                "ratio": "16:9",
+                "reference_images": [
+                  "https://example.com/clothes.png"
+                ],
+                "resolution": "1080P",
+                "video_url": "https://example.com/video.mp4"
+              }
+            }
+          },
+          "schema": {
+            "properties": {
+              "audio_setting": {
+                "default": "auto",
+                "description": "Audio handling mode (auto: intelligent decision based on prompt, origin: preserve original audio)",
+                "enum": [
+                  "auto",
+                  "origin"
+                ],
+                "example": "auto",
+                "type": "string"
+              },
+              "duration": {
+                "default": 5,
+                "description": "Video duration in seconds (2-10 = truncate to specified length)",
+                "enum": [
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10
+                ],
+                "example": 5,
+                "type": "integer"
+              },
+              "negative_prompt": {
+                "description": "Negative prompt describing unwanted content",
+                "example": "blurry, distorted, low quality",
+                "maxLength": 500,
+                "type": "string"
+              },
+              "prompt": {
+                "description": "Text prompt describing desired video modifications (supports Chinese and English, up to 5000 characters)",
+                "example": "Transform the entire scene into clay style",
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "prompt_extend": {
+                "default": true,
+                "description": "Enable intelligent prompt rewriting (improves quality for short prompts but increases processing time)",
+                "example": true,
+                "type": "boolean"
+              },
+              "ratio": {
+                "description": "Video aspect ratio (defaults to input video ratio if not specified)",
+                "enum": [
+                  "16:9",
+                  "9:16",
+                  "1:1",
+                  "4:3",
+                  "3:4"
+                ],
+                "example": "16:9",
+                "type": "string"
+              },
+              "reference_images": {
+                "description": "Reference image URLs for style transfer (optional, max 4). Combined with video_url, the total media count must be ≤ 5",
+                "example": [
+                  "https://example.com/style1.jpg",
+                  "https://example.com/style2.jpg"
+                ],
+                "items": {
+                  "example": "https://example.com/style.jpg",
+                  "format": "uri",
+                  "type": "string"
+                },
+                "maxItems": 4,
+                "type": "array"
+              },
+              "resolution": {
+                "default": "1080P",
+                "description": "Video resolution tier",
+                "enum": [
+                  "720P",
+                  "1080P"
+                ],
+                "example": "1080P",
+                "type": "string"
+              },
+              "seed": {
+                "description": "Random seed for reproducibility (note: results may vary even with same seed)",
+                "example": 42,
+                "maximum": 2147483647,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "video_url": {
+                "description": "Input video URL (HTTP/HTTPS/OSS) or Base64 encoded data (required)",
+                "example": "https://example.com/input.mp4",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "video_url"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "Response code, 0 indicates success",
+                  "example": 0,
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "Detailed data about the submitted asynchronous task.",
+                  "properties": {
+                    "get_result": {
+                      "description": "API information to query the task result",
+                      "properties": {
+                        "method": {
+                          "description": "HTTP method",
+                          "example": "GET",
+                          "type": "string"
+                        },
+                        "url": {
+                          "description": "Full URL to query the task result",
+                          "example": "https://api.modellix.ai/api/v1/tasks/task-abc123",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "model_id": {
+                      "description": "Model ID",
+                      "example": "model-123",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Task status",
+                      "enum": [
+                        "pending",
+                        "processing"
+                      ],
+                      "example": "pending",
+                      "type": "string"
+                    },
+                    "task_id": {
+                      "description": "Unique task identifier",
+                      "example": "task-abc123",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "task_id",
+                    "model_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "Response message",
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Task submitted successfully"
+      }
+    },
+    "summary": "Wan 2.7 Videoedit",
+    "x-mint": {
+      "href": "alibaba/wan-2-7-videoedit"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "1": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "google/nano-banana-2-lite",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"A small red wooden sailboat floating on a calm turquoise lake, simple clean illustration, no people, no text.\", \"aspectRatio\": \"1:1\"}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": []}",
+      "node_instance_id": "example-v1-upload-url-list-1",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800
+    }
+  },
+  "2": {
+    "class_type": "ModellixUploadMedia",
+    "inputs": {
+      "order": "IMAGE,VIDEO,AUDIO",
+      "image": [
+        "1",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "ModellixURLList",
+    "inputs": {
+      "urls": "",
+      "order": "Append",
+      "existing": [
+        "2",
+        1
+      ]
+    }
+  },
+  "4": {
+    "class_type": "ModellixGenerate",
+    "inputs": {
+      "model_slug": "google/nano-banana-2-lite-edit",
+      "parameters_json": "{\"version\": 1, \"values\": {\"prompt\": \"Make the sky a soft sunset pink, retaining the toy sailboat.\"}, \"branches\": {}}",
+      "schema_hash": "",
+      "bindings_json": "{\"version\": 1, \"bindings\": [{\"socket\": \"url_lists.slot0\", \"pointer\": \"/image\"}]}",
+      "node_instance_id": "example-v1-upload-url-list-4",
+      "run_nonce": "initial",
+      "mode": "Wait",
+      "resume_task_id": "",
+      "timeout": 1800,
+      "url_lists.slot0": [
+        "3",
+        0
+      ]
+    }
+  },
+  "5": {
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "4",
+        0
+      ]
+    }
+  }
+}
