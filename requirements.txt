@@ -2,3 +2,4 @@ aiohttp>=3.9,<4
 jsonschema>=4.20,<5
 keyring>=25,<26
 filelock>=3.13,<4
+packaging>=23.2

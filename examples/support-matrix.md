@@ -81,6 +81,10 @@ Local automated results at delivery: **79 pure Python tests** and **6 real Comfy
 
 ## Distribution status and limits
 
+### Startup Compatibility — 2026-10-19
+
+The runtime now enforces the declared minimum ComfyUI version before importing node implementations or registering routes. An actual ComfyUI v0.39.2 host started successfully but reported the minimum-version error and exposed none of the four Modellix nodes through `/object_info`. The real v0.40.0 loader registered all four nodes and all six local route definitions. Version-boundary tests also cover 0.40.0 pre-releases, newer development versions, and missing or invalid host metadata. **122 pure Python tests and 7 real-host tests passed.** This startup regression needs no API key or paid generation.
+
 ### Review Follow-Up — 2026-10-16
 
 The maintenance review added regression coverage for schema changes retaining the same paid intent, structurally damaged protection records, preparation/lock deadlines, confirmed-ID error recovery, malformed task responses, custom result-directory links, and re-downloading an undecodable result. **108 pure Python tests and 6 real-host tests passed.**

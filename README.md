@@ -44,6 +44,8 @@ To reproduce these paths, import the matching [UI workflows](examples/workflows)
 
 Requires ComfyUI **0.40.0+**, Python **3.10+**, a funded [Modellix API key](https://www.modellix.ai/console/api-key), and the Python dependencies below. The initial host baseline is ComfyUI v0.40.0 / frontend 1.55.17. Use a local, single-user host at `http://localhost:8188/`.
 
+At startup, the package checks the host's reported ComfyUI version before importing its nodes or registering routes. Versions below 0.40.0, including pre-releases of 0.40.0, are rejected with a message showing the requirement and detected version. Missing or invalid version metadata also blocks registration with upgrade/repair guidance. Update ComfyUI and restart before using the nodes.
+
 From your ComfyUI directory:
 
 ```sh
