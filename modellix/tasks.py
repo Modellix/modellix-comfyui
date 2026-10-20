@@ -7,7 +7,7 @@ import time
 from .cache import digest
 from .catalog import Catalog
 from .client import Deadline, task_failure
-from .errors import ModellixError
+from .errors import ModellixError, safe_text
 from .media import encode, upload_blob, url_list
 from .schema import MEDIA_TYPES, media_kind, set_pointer, tokens, unpack_parameters
 
@@ -111,7 +111,15 @@ class Engine:
         self.client.progress(stage=stage, task_id=tid, **extra)
 
     async def get_task(self, tid, *, wait=True, budget=None, model=None):
+        try:
+            return await self._get_task(tid, wait=wait, budget=budget, model=model)
+        except ModellixError as error:
+            self.progress("error", tid)
+            raise error.with_context(task_id=tid) from None
+
+    async def _get_task(self, tid, *, wait=True, budget=None, model=None):
         budget = budget or Deadline()
+        self.progress("querying", tid)
         while True:
             data = await self.client.query(tid, budget, wait=wait)
             actual_model = data.get("model_slug") or data.get("model_id") or data.get("model")
@@ -148,7 +156,8 @@ class Engine:
         models = await catalog.models(budget=budget)
         model_entry = next((m for m in models if m.get("slug") == model_slug), None)
         if not model_entry or model_entry.get("type") not in MEDIA_TYPES:
-            raise ModellixError("Selected model is absent from your media catalog or has unsupported output.")
+            raise ModellixError("Selected model is absent from your media catalog or has unsupported output.",
+                                model_slug=safe_text(model_slug, self.client.credential.key))
         schema = await catalog.schema(model_slug, refresh=True, budget=budget)
         if schema_hash and schema.hash != schema_hash:
             raise ModellixError("Model schema changed. Refresh and review fields before a paid submission.")

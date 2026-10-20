@@ -38,6 +38,11 @@ jobs:
         run: python -m ruff check .
       - name: Protocol and state tests (no ComfyUI stubs)
         run: python -m pytest tests/unit -q
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Frontend schema, credentials and task-state regression
+        run: node --test tests/web/schema-form.test.mjs
       - name: Inspect directory-install archive
         run: python tools/package.py
       - name: Check whitespace

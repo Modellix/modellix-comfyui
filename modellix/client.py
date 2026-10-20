@@ -16,7 +16,7 @@ from urllib.parse import quote, urljoin, urlsplit
 import aiohttp
 from filelock import FileLock
 
-from .errors import ModellixError, api_error, safe_text
+from .errors import ModellixError, api_error, field_error, safe_text
 
 API = "https://api.modellix.ai"
 WEB = "https://www.modellix.ai"
@@ -87,7 +87,10 @@ class Client:
         if self.owned:
             await self.session.close()
 
-    async def request(self, method, path, budget, *, public=False, **kwargs):
+    async def request(self, method, path, budget, *, public=False, task_context=None,
+                      model_context=None, **kwargs):
+        task_context = safe_text(task_context, self.credential.key) if task_context else None
+        model_context = safe_text(model_context, self.credential.key) if model_context else None
         url = (self.web if public else self.api) + path
         headers = {} if public else {"Authorization": "Bearer " + self.credential.key}
         for attempt in range(4 if method == "GET" else 1):
@@ -120,7 +123,11 @@ class Client:
                         tid = None
                     if response.status == 200 and body and body.get("code", 0) == 0:
                         return body
-                    error = api_error(response.status, tid, method == "POST" and not tid)
+                    detail = field_error(body, self.credential.key, kwargs.get("json")) \
+                        if response.status in (400, 422) else ""
+                    error = api_error(response.status, task_context or tid,
+                                      method == "POST" and not tid, detail=detail,
+                                      model_slug=model_context)
                     if method != "GET" or response.status not in (429, 500, 502, 503, 504):
                         raise error
                     value = response.headers.get("Retry-After", "")
@@ -132,17 +139,23 @@ class Client:
                                                      - time.time()))
                         except (ValueError, TypeError, OverflowError):
                             pass
+            except ModellixError as error:
+                raise error.with_context(task_id=task_context, model_slug=model_context) from None
             except (aiohttp.ClientError, asyncio.TimeoutError):
                 error = ModellixError(
                     "Network request failed. " + ("Submission outcome unknown. Check task "
                     "history before choosing New Attempt." if method == "POST" else
-                    "Resume using the existing task ID."), unknown=method == "POST")
+                    "Resume using the existing task ID."), unknown=method == "POST",
+                    task_id=task_context, model_slug=model_context)
                 if method == "POST":
                     raise error from None
             if attempt == 3:
                 raise error
-            await budget.sleep(retry_after if retry_after is not None else
-                               2 ** attempt + random.random() * 0.2)
+            try:
+                await budget.sleep(retry_after if retry_after is not None else
+                                   2 ** attempt + random.random() * 0.2)
+            except ModellixError as error:
+                raise error.with_context(task_id=task_context, model_slug=model_context) from None
 
     async def models(self, budget):
         body = await self.request("GET", "/api/v1/models", budget)
@@ -152,12 +165,12 @@ class Client:
 
     async def schema(self, slug, budget):
         return await self.request("GET", "/models/" + slug_path(slug) + "/api_schema",
-                                  budget, public=True)
+                                  budget, public=True, model_context=slug)
 
     async def submit(self, slug, parameters, budget):
         self.counts["generate"] += 1
         response = await self.request("POST", "/api/v1/" + slug_path(slug), budget,
-                                      json=parameters)
+                                      json=parameters, model_context=slug)
         try:
             return task_id(response["data"]["task_id"])
         except (KeyError, TypeError, ModellixError):
@@ -176,7 +189,7 @@ class Client:
             raise ModellixError("Query queue deadline expired. Resume the task ID.", task_id=tid) from None
         try:
             body = await self.request("GET", "/api/v1/tasks/" + quote(tid, safe=""), budget,
-                                      params=params)
+                                      params=params, task_context=tid)
         finally:
             queue.release()
         data = body.get("data", {})

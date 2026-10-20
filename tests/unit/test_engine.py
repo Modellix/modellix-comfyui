@@ -106,6 +106,32 @@ async def test_snapshot_refreshes_pending_without_media(tmp_path):
     assert client.posts == 0 and client.queries == 3
 
 
+@pytest.mark.parametrize("failure", ["deadline", "unknown"])
+async def test_get_task_failure_progress_and_recovery_use_current_input(tmp_path, failure):
+    events = []
+
+    class BrokenQuery(FakeClient):
+        async def query(self, tid, budget, wait=False):
+            raise ModellixError("Local deadline expired" if failure == "deadline" else "Unknown status")
+
+    client = BrokenQuery()
+    client.progress = lambda **event: events.append(event)
+    with pytest.raises(ModellixError) as error:
+        await Engine(client, Store(tmp_path), FakeResults()).get_task("current-task")
+    assert error.value.task_id == "current-task"
+    assert events[0] == {"stage": "querying", "task_id": "current-task"}
+    assert events[-1] == {"stage": "error", "task_id": "current-task"}
+    assert client.posts == 0
+
+
+async def test_removed_catalog_model_error_keeps_slug_and_never_submits(tmp_path):
+    client = FakeClient()
+    with pytest.raises(ModellixError, match="qa/model-removed"):
+        await Engine(client, Store(tmp_path), FakeResults()).generate(
+            **controls(model_slug="qa/model-removed"))
+    assert client.posts == 0
+
+
 async def test_model_identity_mismatch_is_rejected_before_download(tmp_path):
     class WrongModel(FakeClient):
         async def query(self, tid, budget, wait=False):

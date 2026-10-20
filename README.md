@@ -69,6 +69,8 @@ Open **Settings → Modellix → API Key**. Enter the key in the password field 
 
 Priority: session → secure storage → `MODELLIX_API_KEY`. Key changes apply immediately to new executions; an active task keeps its starting credential context. Clear deletes the session/saved key and suppresses environment fallback for the current process until **Use Environment** is explicitly selected. Storage deletion failures are reported.
 
+Credential changes clear the previous account's visible catalog, pricing, and schema fields. A cleared key cannot reopen that catalog, including through a late in-flight response; configure a key before loading models again.
+
 For headless use, set `MODELLIX_API_KEY` before starting ComfyUI. Never put a key in node inputs, workflows, PNG metadata, screenshots or issue reports. Local configuration routes require loopback, same origin, JSON and a session CSRF nonce. This credential setup is for single-user local hosts, not a public multi-user service.
 
 ## Use the nodes
@@ -91,6 +93,8 @@ The authenticated catalog retains the real model `type`. It includes text-to-ima
 
 Every bound field is declared through native V3 typed Autogrow sockets and validated again against its active schema. One field accepts one source; entering JSON/URL values and binding the same field is an error. Scalar fields reject multiple list items instead of taking the first. Optional unset values differ from null, false, zero and empty strings. The advanced JSON editor supports complex values; normal workflows use form controls.
 
+When a saved schema changes, refreshing shows the affected fields and removes incompatible draft values/bindings. Queue stays blocked until you check the new form and click **Accept Reviewed Schema**. Refresh, credential changes, reopening the workflow, and New Attempt do not accept that change. Acceptance saves the reviewed hash; it does not queue work or change the attempt nonce.
+
 Media outputs contain real native objects: RGB `[1,H,W,3]` float tensors, `VideoFromFile`, and AUDIO `{waveform: [B,C,T], sample_rate}`. Separate resources remain separate list entries, preserving different dimensions/rates. Inapplicable media outputs use an ExecutionBlocker; there are no dummy images or empty audio/video objects.
 
 ## Submit, cancel and recover
@@ -104,6 +108,8 @@ New Attempt also clears an existing `resume_task_id` and the previous task displ
 Generation and upload POST requests are not retried automatically, including 429/500/503, timeouts, broken connections and missing/invalid task IDs. A persistent attempt is written before submission. If a response is lost or the process stops while submitting, the outcome stays unknown and automatic replay is blocked. Inspect Console history; do not assume the request was free or unaccepted.
 
 ComfyUI Cancel stops local network waits and downloads. It cannot promise remote cancellation or a refund. A known task ID remains recoverable after cancellation, timeout, decoding or download failure. The same key context must own the task. A terminal upstream failure is reported without creating another task.
+
+Get Task status and its copy/recovery actions follow the current execution's ID, including errors and local deadlines. A 404 identifies the requested task or model. Parameter errors preserve cleaned upstream field guidance while omitting credentials, signed URLs, and echoed request values; paid POST requests still never replay automatically.
 
 ## Uploads and URL lists
 
@@ -145,11 +151,14 @@ The wire format is version 1. `parameters_json` is `{"version":1,"values":{...},
 
 ## Development and verification
 
+Frontend regression tests use Node.js 24.
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -e ".[dev]"
 .\.venv\Scripts\python -m ruff check .
 .\.venv\Scripts\python -m pytest tests/unit -q
+node --test tests/web/schema-form.test.mjs
 python tools/package.py
 ```
 

@@ -69,7 +69,9 @@ async def run_generate(node_id, **kwargs):
 
 
 async def run_task(node_id, tid, wait, timeout):
-    from .client import Deadline
+    from .client import Deadline, task_id
+    tid = task_id(tid)
+    progress(node_id)(stage="querying", task_id=tid)
     credential = auth.snapshot(store())
     async with Client(credential, progress=progress(node_id)) as client:
         return await Engine(client, store(), results()).get_task(

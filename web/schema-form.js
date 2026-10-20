@@ -53,6 +53,15 @@ function fieldAt(schema, branches, path) {
   return effective(current, branches, path);
 }
 
+function acceptsValue(field, value) {
+  if (value === null && field.nullable) return true;
+  if (field.enum && !field.enum.some(item => JSON.stringify(item) === JSON.stringify(value))) return false;
+  const types = Array.isArray(field.type) ? field.type : field.type ? [field.type] : [];
+  return !types.length || types.some(type => type === "null" ? value === null :
+    type === "array" ? Array.isArray(value) : type === "object" ? value !== null && typeof value === "object" && !Array.isArray(value) :
+    type === "integer" ? Number.isInteger(value) : type === "number" ? typeof value === "number" : typeof value === type);
+}
+
 export function createForm(node, { request, element: el, button, widget }) {
   const root = el("div");
   root.className = "modellix-controls modellix-form";
@@ -79,6 +88,18 @@ export function createForm(node, { request, element: el, button, widget }) {
   const details = el("details", undefined, root);
   el("summary", "Model Details and Pricing", details);
   const description = el("p", undefined, details);
+  const review = el("div", undefined, root);
+  review.hidden = true;
+  const reviewMessage = el("p", undefined, review);
+  reviewMessage.setAttribute("role", "status");
+  button(review, "Accept Reviewed Schema", () => {
+    if (!pendingHash) return;
+    widget(node, "schema_hash").value = pendingHash;
+    pendingHash = ""; reviewPaths = [];
+    review.hidden = true;
+    status.textContent = "Reviewed schema accepted. Check parameters before Queue; a changed request may be paid.";
+    save();
+  });
   const fields = el("div", undefined, root);
   const advanced = el("details", undefined, root);
   el("summary", "Advanced JSON and Request Controls", advanced);
@@ -109,6 +130,7 @@ export function createForm(node, { request, element: el, button, widget }) {
     syncSockets(); render(); save(); });
 
   let catalog = [], schema = null, schemaSlug = "", state = { version: 1, values: {}, branches: {} }, bindings = [], version = 0;
+  let catalogVersion = 0, pendingHash = "", reviewPaths = [];
   const hidden = new Set(["model_slug", "parameters_json", "schema_hash", "bindings_json", "node_instance_id",
     "run_nonce", "mode", "resume_task_id", "timeout"]);
   for (const item of node.widgets || []) {
@@ -167,13 +189,12 @@ export function createForm(node, { request, element: el, button, widget }) {
   };
 
   function prune(oldSchema) {
-    let removed = 0;
+    const removed = [];
     const walk = (object, path = "") => {
       for (const key of Object.keys(object)) {
         const pointer = path + "/" + escape(key), current = fieldAt(schema, state.branches, pointer);
-        const old = oldSchema && fieldAt(oldSchema, state.branches, pointer);
-        if (!current || (old && old.type && current.type !== old.type)) {
-          delete object[key]; removed++; continue;
+        if (!current || !acceptsValue(current, object[key])) {
+          delete object[key]; removed.push(pointer); continue;
         }
         if (current.type === "object" && object[key] && typeof object[key] === "object" && !Array.isArray(object[key])) walk(object[key], pointer);
       }
@@ -182,12 +203,12 @@ export function createForm(node, { request, element: el, button, widget }) {
     bindings = bindings.filter((entry) => {
       const current = fieldAt(schema, state.branches, entry.pointer);
       const old = oldSchema && fieldAt(oldSchema, state.branches, entry.pointer);
-      const okay = current && (!old || old.type === current.type);
-      if (!okay) removed++;
+      const okay = current && (!old || JSON.stringify(old.type) === JSON.stringify(current.type));
+      if (!okay) removed.push(entry.pointer);
       return okay;
     });
     syncSockets();
-    if (removed) status.textContent = `Removed ${removed} incompatible fields/bindings. Review before Queue.`;
+    return [...new Set(removed)];
   }
 
   function branchSelectors(raw, parent, path) {
@@ -313,7 +334,7 @@ export function createForm(node, { request, element: el, button, widget }) {
     save();
   }
 
-  async function choose(slug, refresh = false, offline = false, review = refresh) {
+  async function choose(slug, refresh = false, offline = false) {
     if (!slug) return;
     const currentVersion = ++version;
     const switching = widget(node, "model_slug").value !== slug || (schema && schemaSlug !== slug);
@@ -341,15 +362,29 @@ export function createForm(node, { request, element: el, button, widget }) {
       schema = result.schema;
       schemaSlug = slug;
       widget(node, "model_slug").value = slug;
-      // Preserve a saved schema hash until explicit refresh/model change; server blocks drift.
-      if (review || switching || !widget(node, "schema_hash").value ||
+      // Fetching a schema never accepts a changed saved contract.
+      if (switching || !widget(node, "schema_hash").value ||
           widget(node, "schema_hash").value === "modellix:loading") widget(node, "schema_hash").value = result.hash;
-      const drift = widget(node, "schema_hash").value !== result.hash;
+      const removed = prune(old);
+      const drift = widget(node, "schema_hash").value !== result.hash || removed.length > 0;
+      if (drift) {
+        if (widget(node, "schema_hash").value === result.hash) widget(node, "schema_hash").value = "modellix:review:" + result.hash;
+        reviewPaths = pendingHash === result.hash ? [...new Set([...reviewPaths, ...removed])] : removed;
+        if (old) {
+          for (const path of new Set([...Object.keys(old.properties || {}), ...Object.keys(schema.properties || {})])) {
+            if (JSON.stringify(old.properties?.[path]) !== JSON.stringify(schema.properties?.[path])) reviewPaths.push("/" + escape(path));
+          }
+          reviewPaths = [...new Set(reviewPaths)];
+        }
+        pendingHash = result.hash;
+        reviewMessage.textContent = "Schema changed. Submission is blocked until you accept the reviewed fields." +
+          (reviewPaths.length ? ` Affected fields/bindings: ${reviewPaths.join(", ")}.` : " Review all displayed fields and bindings.");
+      } else { pendingHash = ""; reviewPaths = []; }
+      review.hidden = !pendingHash;
       const model = catalog.find((item) => item.slug === slug);
       description.textContent = `${model?.type || ""} · ${slug.split("/")[0]} · ${model?.description || ""}` +
         (model?.price ? ` · Pricing: ${typeof model.price === "object" ? JSON.stringify(model.price) : model.price}` : "");
-      status.textContent = drift ? "Saved schema changed. Refresh Online and review fields before Queue." : offline ? "Cached schema · Offline editing only. Submission revalidates online." : "Ready · Review fields and Queue.";
-      if (!drift) prune(old);
+      status.textContent = drift ? "Schema review required · Queue is blocked. Use Accept Reviewed Schema after checking the fields." : offline ? "Cached schema · Offline editing only. Submission revalidates online." : "Ready · Review fields and Queue.";
       render();
     } catch (error) { if (currentVersion === version) { status.textContent = error.message; fields.replaceChildren(); } }
     finally { if (currentVersion === version) root.removeAttribute("aria-busy"); }
@@ -368,18 +403,32 @@ export function createForm(node, { request, element: el, button, widget }) {
     else models.selectedIndex = -1;
     if (!filtered.length) status.textContent = "No models match this category/search.";
   }
-  async function loadCatalog(refresh = false, offline = false, review = refresh) {
+  function clearCatalog() {
+    catalog = []; schema = null; schemaSlug = "";
+    pendingHash = ""; reviewPaths = []; review.hidden = true;
+    models.replaceChildren(); category.replaceChildren(); fields.replaceChildren();
+    description.textContent = "";
+    root.removeAttribute("aria-busy");
+  }
+  async function loadCatalog(refresh = false, offline = false) {
+    const currentCatalog = ++catalogVersion;
     status.textContent = "Loading catalog…";
     try {
-      catalog = (await request(`models?refresh=${refresh}&offline=${offline}`)).models;
+      const response = await request(`models?refresh=${refresh}&offline=${offline}`);
+      if (currentCatalog !== catalogVersion) return;
+      catalog = response.models;
       const previous = category.value;
       category.replaceChildren(); el("option", "All media categories", category).value = "";
       for (const type of [...new Set(catalog.map((model) => model.type))]) el("option", type, category).value = type;
       category.value = previous;
       filterModels();
       status.textContent = `${catalog.length} models · Select a model. Text-output models are listed with a scope explanation.`;
-      if (widget(node, "model_slug").value) await choose(widget(node, "model_slug").value, refresh, offline, review);
-    } catch (error) { status.textContent = error.message + " Open Settings → Modellix to configure your key, then retry."; }
+      if (widget(node, "model_slug").value) await choose(widget(node, "model_slug").value, refresh, offline);
+    } catch (error) {
+      if (currentCatalog !== catalogVersion) return;
+      ++version; clearCatalog();
+      status.textContent = error.message + " Open Settings → Modellix to configure your key, then retry.";
+    }
   }
   search.oninput = filterModels; category.onchange = filterModels;
   models.onchange = () => choose(models.value);
@@ -396,7 +445,11 @@ export function createForm(node, { request, element: el, button, widget }) {
   const configured = node.onConfigure;
   node.onConfigure = function () { configured?.apply(this, arguments); queueMicrotask(restore); };
   // A credential refresh may fetch schemas, but does not review saved contract changes.
-  const credentials = () => loadCatalog(true, false, false);
+  const credentials = (event) => {
+    ++version; ++catalogVersion; clearCatalog();
+    status.textContent = "Configure your API key in Settings → Modellix, then refresh the catalog.";
+    if (event.detail?.configured !== false) loadCatalog(true);
+  };
   node.modellixResetRecovery = () => { resume.value = ""; };
   window.addEventListener("modellix.credentials", credentials);
   const removed = node.onRemoved;

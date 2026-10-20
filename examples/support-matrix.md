@@ -81,6 +81,10 @@ Local automated results at delivery: **79 pure Python tests** and **6 real Comfy
 
 ## Distribution status and limits
 
+### Schema Review and Error Recovery — 2026-10-20
+
+Five reported defects were reproduced with a real ComfyUI v0.40.0 frontend and a controlled local API using synthetic credentials and task IDs. An unaccepted schema change produced zero generation POSTs; explicit acceptance submitted once, and a repeat Queue added none. Reopening an old workflow retained the review gate. A 400 retained its cleaned `/prompt` guidance and did not replay; 404 errors identified the requested task or model. Get Task timeout/unknown-state errors and recovery used the current task ID. Clear Key removed all old catalog options, pricing, and fields; late-response, unchanged union-type, and partial-clear regressions passed. The form passed 1200/1440/1920 viewport checks. **131 pure Python tests, 7 frontend regression tests, and 7 real-host tests passed.** No real API key or paid call was used for these fault cases.
+
 ### Startup Compatibility — 2026-10-19
 
 The runtime now enforces the declared minimum ComfyUI version before importing node implementations or registering routes. An actual ComfyUI v0.39.2 host started successfully but reported the minimum-version error and exposed none of the four Modellix nodes through `/object_info`. The real v0.40.0 loader registered all four nodes and all six local route definitions. Version-boundary tests also cover 0.40.0 pre-releases, newer development versions, and missing or invalid host metadata. **122 pure Python tests and 7 real-host tests passed.** This startup regression needs no API key or paid generation.

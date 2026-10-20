@@ -191,6 +191,68 @@ async def test_malformed_task_data_retains_recoverable_id(data):
         assert error.value.task_id == "test-task"
 
 
+async def test_400_retains_field_guidance_but_not_credentials_or_request_content():
+    requests = []
+
+    async def handle(request):
+        requests.append(request.method)
+        return web.json_response({"message": 'QA /prompt sentinel field. Bearer fake-key '
+            'api_key="another-secret" https://cdn.test/a?signature=private '
+            '{"prompt":"private prompt","voice":"private voice"}'}, status=400)
+
+    async with api(handle) as origin, Client(Credential("fake-key", "c"), api=origin) as client:
+        with pytest.raises(ModellixError) as error:
+            await client.submit("qa/field-model", {"prompt": "private prompt", "nested": {
+                "voice": "private voice"}}, Deadline(2))
+    message = str(error.value)
+    assert "QA /prompt sentinel field" in message and "qa/field-model" in message
+    for private in ("fake-key", "another-secret", "signature=private", "private prompt", "private voice"):
+        assert private not in message
+    assert error.value.unknown and requests == ["POST"]
+
+
+@pytest.mark.parametrize("operation", ["task", "schema", "generate"])
+async def test_404_uses_requested_identity_without_response_metadata(operation):
+    async def handle(request):
+        return web.json_response({"code": 404}, status=404)
+
+    async with api(handle) as origin, Client(Credential("fake", "c"), api=origin, web=origin) as client:
+        with pytest.raises(ModellixError) as error:
+            if operation == "task":
+                await client.query("missing-task", Deadline(2))
+            elif operation == "schema":
+                await client.schema("qa/missing-model", Deadline(2))
+            else:
+                await client.submit("qa/missing-model", {}, Deadline(2))
+    expected = "missing-task" if operation == "task" else "qa/missing-model"
+    assert expected in str(error.value)
+    assert error.value.status == 404
+
+
+async def test_task_error_response_cannot_replace_requested_task_identity():
+    async def handle(request):
+        return web.json_response({"data": {"task_id": "wrong-task"}}, status=404)
+
+    async with api(handle) as origin, Client(Credential("fake", "c"), api=origin) as client:
+        with pytest.raises(ModellixError) as error:
+            await client.query("requested-task", Deadline(2))
+    assert error.value.task_id == "requested-task" and "wrong-task" not in str(error.value)
+
+
+async def test_retry_deadline_retains_requested_task_identity():
+    class ExpiredBudget(Deadline):
+        async def sleep(self, seconds):
+            raise ModellixError("Local deadline expired")
+
+    async def handle(request):
+        return web.Response(status=503)
+
+    async with api(handle) as origin, Client(Credential("fake", "c"), api=origin) as client:
+        with pytest.raises(ModellixError) as error:
+            await client.query("current-deadline-task", ExpiredBudget(2))
+    assert error.value.task_id == "current-deadline-task"
+
+
 @pytest.mark.parametrize("result", ["invalid", ["resource"]])
 def test_malformed_success_result_is_a_recoverable_error(result):
     with pytest.raises(ModellixError) as error:

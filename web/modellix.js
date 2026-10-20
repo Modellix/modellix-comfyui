@@ -47,19 +47,26 @@ function credentialControl() {
     const data = await request("session");
     csrf = data.csrf;
     status.textContent = data.configured ? `Configured · ${data.source}` : `No key configured · ${data.source}`;
+    return data;
   };
   const apply = async (action) => {
     const key = input.value;
     input.value = "";
     status.textContent = "Applying…";
+    let failure = "";
     try {
       if (!csrf) await refresh();
       await request("credentials", { method: "POST", headers: {
         "Content-Type": "application/json", "X-Modellix-CSRF": csrf,
       }, body: JSON.stringify({ action, ...(action === "save" || action === "session" ? { key } : {}) }) });
-      await refresh();
-      window.dispatchEvent(new Event("modellix.credentials"));
-    } catch (error) { status.textContent = error.message; }
+    } catch (error) { failure = error.message; }
+    finally {
+      try {
+        const data = await refresh();
+        window.dispatchEvent(new CustomEvent("modellix.credentials", { detail: data }));
+      } catch (error) { failure ||= error.message; }
+      if (failure) status.textContent = failure;
+    }
   };
   button(actions, "Session Only", () => apply("session"));
   button(actions, "Secure Save", () => apply("save"));
@@ -114,6 +121,11 @@ function statusWidget(node) {
     });
   }
   const files = element("div", undefined, root);
+  node.modellixBegin = () => {
+    delete node.properties.modellixLastTask;
+    files.replaceChildren();
+    status.textContent = "Starting this execution…";
+  };
   node.addDOMWidget("modellix_status", "div", root, { serialize: false, hideOnZoom: false,
     getMinHeight: () => 110, getMaxHeight: () => 140 });
   node.modellixStatus = (data) => {
@@ -157,6 +169,9 @@ app.registerExtension({
     });
     api.addEventListener("execution_error", ({ detail }) => {
       app.graph.getNodeById(detail.node_id)?.modellixStatus?.({ status: detail.exception_message });
+    });
+    api.addEventListener("executing", ({ detail }) => {
+      app.graph.getNodeById(detail)?.modellixBegin?.();
     });
   },
   nodeCreated(node) {
