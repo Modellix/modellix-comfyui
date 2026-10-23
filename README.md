@@ -48,7 +48,7 @@ At startup, the package checks the host's reported ComfyUI version before import
 
 ### Registry and Manager
 
-[Comfy Registry](https://registry.comfy.org/publishers/modellix/nodes/modellix-comfyui) version **0.1.0** is available from publisher **Modellix** (`modellix`). In ComfyUI-Manager, search for `modellix-comfyui`, choose version **0.1.0**, install, and restart ComfyUI. Refresh the Manager catalog/version list if the new release is not yet visible.
+[Comfy Registry](https://registry.comfy.org/publishers/modellix/nodes/modellix-comfyui) version **0.1.0** is available from publisher **Modellix** (`modellix`). In ComfyUI-Manager, search for **Modellix**, confirm publisher `modellix`, choose version **0.1.0**, install, and restart ComfyUI. The package ID for CLI installs is `modellix-comfyui`. Refresh the Manager catalog/version list if the new release is not yet visible.
 
 With Comfy CLI configured for your ComfyUI installation:
 
