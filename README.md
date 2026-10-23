@@ -46,6 +46,18 @@ Requires ComfyUI **0.40.0+**, Python **3.10+**, a funded [Modellix API key](http
 
 At startup, the package checks the host's reported ComfyUI version before importing its nodes or registering routes. Versions below 0.40.0, including pre-releases of 0.40.0, are rejected with a message showing the requirement and detected version. Missing or invalid version metadata also blocks registration with upgrade/repair guidance. Update ComfyUI and restart before using the nodes.
 
+### Registry and Manager
+
+[Comfy Registry](https://registry.comfy.org/publishers/modellix/nodes/modellix-comfyui) version **0.1.0** is available from publisher **Modellix** (`modellix`). In ComfyUI-Manager, search for `modellix-comfyui`, choose version **0.1.0**, install, and restart ComfyUI. Refresh the Manager catalog/version list if the new release is not yet visible.
+
+With Comfy CLI configured for your ComfyUI installation:
+
+```sh
+comfy node install modellix-comfyui@0.1.0
+```
+
+### Git installation
+
 From your ComfyUI directory:
 
 ```sh
@@ -61,7 +73,7 @@ Use the interpreter that runs ComfyUI. Windows portable, from its portable root:
 
 Restart ComfyUI, then search for **Modellix** under **Modellix / Media**. No local model weights, CLI, Node service, Partner Nodes account or third-party video nodes are required. Import never installs dependencies or calls the network.
 
-Git clone is the available distribution channel. Registry metadata and directory packaging are included; a Registry/Manager release is a separate publication and is not claimed here. To update, pull this repository, install requirements and restart.
+For Registry installs, choose the desired published version in Manager and restart. For Git installs, pull this repository, install requirements and restart. Published Registry versions are immutable; changes pushed to GitHub main reach Registry users through a new version release.
 
 ## Configure a key
 
