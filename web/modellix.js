@@ -21,8 +21,9 @@ export function button(parent, label, action) {
 
 export async function request(path, options) {
   const response = await api.fetchApi("/modellix/" + path, options);
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error || "Modellix request failed.");
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || `Modellix request failed (HTTP ${response.status}).`);
+  if (body === null) throw new Error("Modellix returned an invalid local API response.");
   return body;
 }
 
@@ -126,7 +127,7 @@ function statusWidget(node) {
     files.replaceChildren();
     status.textContent = "Starting this execution…";
   };
-  node.addDOMWidget("modellix_status", "div", root, { serialize: false, hideOnZoom: false,
+  node.addDOMWidget("modellix_status", "div", root, { serialize: false, hideOnZoom: false, hideInPanel: true,
     getMinHeight: () => 110, getMaxHeight: () => 140 });
   node.modellixStatus = (data) => {
     if (!data.task_id && ["uploading", "submitting"].includes(data.stage)) {

@@ -1,6 +1,7 @@
 """Loopback-only, same-origin, write-only configuration routes."""
 import hmac
 import ipaddress
+import json
 import re
 import secrets
 from urllib.parse import urlsplit
@@ -15,13 +16,14 @@ from .errors import ModellixError
 
 _registered = False
 _nonce = secrets.token_urlsafe(32)
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 def local_request(request, write=False):
     try:
         remote = ipaddress.ip_address(request.remote)
         host = urlsplit("http://" + request.host)
-        if not remote.is_loopback or host.hostname != "localhost":
+        if not remote.is_loopback or host.hostname not in _LOCAL_HOSTS:
             raise ValueError
         origin = request.headers.get("Origin")
         if origin and origin != f"{request.scheme}://{request.host}":
@@ -32,7 +34,11 @@ def local_request(request, write=False):
             not hmac.compare_digest(request.headers.get("X-Modellix-CSRF", ""), _nonce)):
             raise ValueError
     except (ValueError, TypeError):
-        raise web.HTTPForbidden(text="Local same-origin request required.") from None
+        raise web.HTTPForbidden(
+            text=json.dumps({"error": "Local same-origin request required. "
+                                      "Open ComfyUI on this device, reload the page, and retry."}),
+            content_type="application/json",
+        ) from None
 
 
 async def result_file(request):

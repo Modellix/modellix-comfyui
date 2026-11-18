@@ -427,7 +427,7 @@ export function createForm(node, { request, element: el, button, widget }) {
     } catch (error) {
       if (currentCatalog !== catalogVersion) return;
       ++version; clearCatalog();
-      status.textContent = error.message + " Open Settings → Modellix to configure your key, then retry.";
+      status.textContent = error.message;
     }
   }
   search.oninput = filterModels; category.onchange = filterModels;
@@ -454,7 +454,7 @@ export function createForm(node, { request, element: el, button, widget }) {
   window.addEventListener("modellix.credentials", credentials);
   const removed = node.onRemoved;
   node.onRemoved = function () { window.removeEventListener("modellix.credentials", credentials); removed?.apply(this, arguments); };
-  node.addDOMWidget("modellix_form", "div", root, { serialize: false, hideOnZoom: false,
+  node.addDOMWidget("modellix_form", "div", root, { serialize: false, hideOnZoom: false, hideInPanel: true,
     getMinHeight: () => 420, getMaxHeight: () => 650 });
   queueMicrotask(restore);
   return root;

@@ -42,20 +42,20 @@ To reproduce these paths, import the matching [UI workflows](examples/workflows)
 
 ## Install
 
-Requires ComfyUI **0.40.0+**, Python **3.10+**, a funded [Modellix API key](https://www.modellix.ai/console/api-key), and the Python dependencies below. The initial host baseline is ComfyUI v0.40.0 / frontend 1.55.17. Use a local, single-user host at `http://localhost:8188/`.
+Requires ComfyUI **0.40.0+**, Python **3.10+**, a funded [Modellix API key](https://www.modellix.ai/console/api-key), and the Python dependencies below. The initial host baseline is ComfyUI v0.40.0 / frontend 1.55.17. Use ComfyUI Desktop or a single-user instance on this device, such as `http://localhost:8188/`.
 
 At startup, the package checks the host's reported ComfyUI version before importing its nodes or registering routes. Versions below 0.40.0, including pre-releases of 0.40.0, are rejected with a message showing the requirement and detected version. Missing or invalid version metadata also blocks registration with upgrade/repair guidance. Update ComfyUI and restart before using the nodes.
 
 ### Registry and Manager
 
-[Comfy Registry](https://registry.comfy.org/publishers/modellix/nodes/modellix-comfyui) version **0.1.0** is available from publisher **Modellix** (`modellix`). In ComfyUI-Manager, search for **Modellix**, confirm publisher `modellix`, choose version **0.1.0**, install, and restart ComfyUI. The package ID for CLI installs is `modellix-comfyui`. Refresh the Manager catalog/version list if the new release is not yet visible.
+In ComfyUI-Manager, search for **Modellix**, confirm publisher `modellix` on [Comfy Registry](https://registry.comfy.org/publishers/modellix/nodes/modellix-comfyui), select an active version, and restart ComfyUI. Version **0.1.1** fixes API key setup at the default ComfyUI Desktop address and keeps the node panels full width with Properties open.
 
-Registry security scanning runs separately from uploading a version. If Manager shows **Security validation pending** or no active release versions, wait for the Registry version to become active before installing through Manager, or use the Git installation below.
+Versions undergoing Registry security review may be absent from Manager's active version list. Refresh the catalog after Registry activates the version.
 
-With Comfy CLI configured for your ComfyUI installation:
+Once version 0.1.1 is active, you can install it with Comfy CLI:
 
 ```sh
-comfy node install modellix-comfyui@0.1.0
+comfy node install modellix-comfyui@0.1.1
 ```
 
 ### Git installation

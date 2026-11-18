@@ -36,8 +36,8 @@ function node(type = "ModellixGenerate") {
     bindings_json: JSON.stringify({ version: 1, bindings: [{ pointer: "/empty_field", socket: "strings.slot0" }] }),
     node_instance_id: "fixture-node", run_nonce: "stable", resume_task_id: "", timeout: 2, task_id: "current-task" };
   return { comfyClass: type, properties: {}, size: [480, 350], widgets: Object.entries(values).map(([name, value]) => ({ name, value })),
-    inputs: [], roots: [], setDirtyCanvas() {}, setSize(size) { this.size = size; },
-    addDOMWidget(name, type, root) { this.roots.push(root); },
+    inputs: [], roots: [], domOptions: [], setDirtyCanvas() {}, setSize(size) { this.size = size; },
+    addDOMWidget(name, type, root, options) { this.roots.push(root); this.domOptions.push(options); },
     addInput(name, type, extra) { const value = { name, type, ...extra }; this.inputs.push(value); return value; },
     removeInput(index) { this.inputs.splice(index, 1); }, isInputConnected() { return false; } };
 }
@@ -60,7 +60,10 @@ async function harness(t, fetch) {
   globalThis.window = new EventTarget();
   globalThis.document = { createElement: tag => new Element(tag), head: new Element("head") };
   const api = new EventTarget();
-  api.fetchApi = async (path, options) => ({ ok: true, json: async () => fetch(path, options) });
+  api.fetchApi = async (path, options) => {
+    const response = await fetch(path, options);
+    return response instanceof Response ? response : Response.json(response);
+  };
   api.apiURL = path => path;
   const app = { graph: { getNodeById: () => app.current }, registerExtension(extension) { this.extension = extension; } };
   globalThis.__modellixHost = { app, api };
@@ -68,6 +71,24 @@ async function harness(t, fetch) {
   app.extension.setup();
   return { app, api, create(type) { const value = node(type); app.current = value; app.extension.nodeCreated(value); return value; } };
 }
+
+test("local route errors are readable in Settings and the model catalog", async t => {
+  const guidance = "Local same-origin request required. Open ComfyUI on this device, reload the page, and retry.";
+  let reply = () => Response.json({ error: guidance }, { status: 403 });
+  const h = await harness(t, () => reply());
+  const settings = h.app.extension.settings[0].type();
+  const n = h.create();
+  await flush();
+  assert.deepEqual(n.domOptions.map(options => options.hideInPanel), [true, true]);
+  assert.ok(settings.textContent.includes(guidance));
+  assert.ok(n.roots[1].textContent.includes(guidance));
+
+  reply = () => new Response("Forbidden", { status: 403 });
+  await button(n.roots[1], "Refresh Online").click();
+  await button(settings, "Session Only").click();
+  assert.match(n.roots[1].textContent, /HTTP 403/);
+  assert.match(settings.textContent, /HTTP 403/);
+});
 
 test("schema refresh requires explicit acceptance; Queue hash stays blocked across refresh and reopen", async t => {
   let hash = "schema-v1", schema = structuredClone(fixture), posts = 0;

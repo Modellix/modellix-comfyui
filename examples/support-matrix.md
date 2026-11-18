@@ -81,6 +81,12 @@ Local automated results at delivery: **79 pure Python tests** and **6 real Comfy
 
 ## Distribution status and limits
 
+### Desktop Local Access and Node Sizing (2026-11-18)
+
+Compared versions 0.1.0 and 0.1.1 in ComfyUI 0.40.0 with frontend 1.55.17 on Windows. Requests using the Desktop default host produced a 403 and a JSON error in version 0.1.0. Version 0.1.1 accepted a synthetic session key and loaded the controlled catalog and model schema. Local route and frontend tests cover mismatched origins, CSRF rejection, and readable errors for JSON and plain-text responses.
+
+Selecting the old node with Properties open reduced its two panels from 600 to 223 pixels. Dragging the updated node from 620 to 720 pixels grew both panels from 600 to 700 pixels. The updated layout held at viewport widths of 1200, 1440, and 1920 pixels and after reopening the workflow. The run passed **134 Python unit tests, 8 frontend tests, and 7 real-host tests** with fixture data and no paid generation.
+
 ### Schema Review and Error Recovery — 2026-10-20
 
 Five reported defects were reproduced with a real ComfyUI v0.40.0 frontend and a controlled local API using synthetic credentials and task IDs. An unaccepted schema change produced zero generation POSTs; explicit acceptance submitted once, and a repeat Queue added none. Reopening an old workflow retained the review gate. A 400 retained its cleaned `/prompt` guidance and did not replay; 404 errors identified the requested task or model. Get Task timeout/unknown-state errors and recovery used the current task ID. Clear Key removed all old catalog options, pricing, and fields; late-response, unchanged union-type, and partial-clear regressions passed. The form passed 1200/1440/1920 viewport checks. **131 pure Python tests, 7 frontend regression tests, and 7 real-host tests passed.** No real API key or paid call was used for these fault cases.
